@@ -1,0 +1,37 @@
+﻿@model IEnumerable<AppointmentSystem.Models.ViewModel.VisitorViewModel>
+
+@{
+    ViewData["Title"] = "Visitor List";
+}
+
+<h2>Visitors</h2>
+
+<a href="@Url.Action("Create", "Visitor")" class="btn btn-primary">Add New Visitor</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Mobile Number</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var visitor in Model)
+        {
+            <tr>
+                <td>@visitor.Name</td>
+                <td>@visitor.MobileNumber</td>
+                <td>@visitor.EmailAddress</td>
+                <td>@visitor.Status ? "Active" : "Inactive"</td>
+                <td>
+                    <a href="@Url.Action("Details", "Visitor", new { id = visitor.Id })" class="btn btn-info">Details</a>
+                    <a href="@Url.Action("Edit", "Visitor", new { id = visitor.Id })" class="btn btn-warning">Edit</a>
+                    <a href="@Url.Action("Delete", "Visitor", new { id = visitor.Id })" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
