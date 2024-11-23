@@ -101,9 +101,31 @@ namespace AppointmentSystem.Controllers
                 return View(model);
             }
 
-            await _postService.UpdatePostAsync(model);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                // Get the existing post
+                var existingPost = await _postService.GetPostByIdAsync(model.Id);
+                if (existingPost == null)
+                {
+                    return NotFound();
+                }
+
+                // Update the model with the new name but keep the existing status
+                existingPost.Name = model.Name;
+                // Status remains unchanged as it's coming from the hidden field
+
+                await _postService.UpdatePostAsync(existingPost);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred while updating the post.");
+                return View(model);
+            }
         }
+
+
+
 
         // GET: /Post/Details/{id}
         [HttpGet]

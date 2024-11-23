@@ -33,7 +33,8 @@ namespace AppointmentSystem.Repository.Implementation
 
         public async Task UpdateVisitorAsync(Visitor visitor)
         {
-            _context.Visitors.Update(visitor);
+            // No need to attach or set state - just update
+            _context.Update(visitor);
             await _context.SaveChangesAsync();
         }
 

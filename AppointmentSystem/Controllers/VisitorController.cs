@@ -2,89 +2,105 @@
 using AppointmentSystem.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AppointmentSystem.Controllers
+public class VisitorController : Controller
 {
-    public class VisitorController : Controller
+    private readonly IVisitorService _visitorService;
+
+    public VisitorController(IVisitorService visitorService)
     {
+        _visitorService = visitorService;
+    }
 
+    public async Task<IActionResult> Index()
+    {
+        var visitors = await _visitorService.GetAllVisitorsAsync();
+        return View(visitors);
+    }
 
+    public IActionResult Create()
+    {
+        return View(new VisitorViewModel());
+    }
 
-        private readonly IVisitorService _visitorService;
-
-        public VisitorController(IVisitorService visitorService)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([Bind("Name,MobileNumber,EmailAddress")] VisitorViewModel visitorViewModel)
+    {
+        if (ModelState.IsValid)
         {
-            _visitorService = visitorService;
-        }
-
-        // Display a list of all visitors
-        public async Task<IActionResult> Index()
-        {
-            var visitors = await _visitorService.GetAllVisitorsAsync();
-            return View(visitors);  // Return the list to the view
-        }
-
-        // Display the details of a single visitor
-        public async Task<IActionResult> Details(int id)
-        {
-            var visitor = await _visitorService.GetVisitorByIdAsync(id);
-            if (visitor == null)
-            {
-                return NotFound();
-            }
-            return View(visitor);  // Return the visitor details to the view
-        }
-
-        // Display the Create view (empty form)
-        public IActionResult Create()
-        {
-            return View();  // Return the form view for creating a visitor
-        }
-
-        // Handle the POST request to create a new visitor
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(VisitorViewModel visitorViewModel)
-        {
-            if (ModelState.IsValid)
+            try
             {
                 await _visitorService.CreateVisitorAsync(visitorViewModel);
-                return RedirectToAction(nameof(Index));  // Redirect to the Index (list) view after successful creation
+                TempData["Success"] = "Visitor created successfully.";
+                return RedirectToAction(nameof(Index));
             }
-            return View(visitorViewModel);  // Return the form with validation errors
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Error creating visitor: " + ex.Message);
+            }
+        }
+        return View(visitorViewModel);
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var visitor = await _visitorService.GetVisitorByIdAsync(id);
+        if (visitor == null)
+        {
+            return NotFound();
+        }
+        return View(visitor);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,MobileNumber,EmailAddress,Status")] VisitorViewModel visitorViewModel)
+    {
+        if (id != visitorViewModel.Id)
+        {
+            return NotFound();
         }
 
-        // Display the Edit view with an existing visitor's data
-        public async Task<IActionResult> Edit(int id)
+        if (ModelState.IsValid)
         {
-            var visitor = await _visitorService.GetVisitorByIdAsync(id);
-            if (visitor == null)
-            {
-                return NotFound();
-            }
-            return View(visitor);  // Return the form with the existing visitor data
-        }
-
-        // Handle the POST request to update a visitor
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, VisitorViewModel visitorViewModel)
-        {
-            if (id != visitorViewModel.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
+            try
             {
                 await _visitorService.UpdateVisitorAsync(visitorViewModel);
-                return RedirectToAction(nameof(Index));  // Redirect to the Index (list) view after successful update
+                TempData["Success"] = "Visitor updated successfully.";
+                return RedirectToAction(nameof(Index));
             }
-            return View(visitorViewModel);  // Return the form with validation errors
+            catch (Exception ex)
+            {
+                if (!await VisitorExists(id))
+                {
+                    return NotFound();
+                }
+                ModelState.AddModelError("", "Error updating visitor: " + ex.Message);
+            }
+        }
+        return View(visitorViewModel);
+    }
+
+    private async Task<bool> VisitorExists(int id)
+    {
+        var visitor = await _visitorService.GetVisitorByIdAsync(id);
+        return visitor != null;
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleStatus(int id, [FromBody] bool status)
+    {
+        var visitor = await _visitorService.GetVisitorByIdAsync(id);
+        if (visitor == null)
+        {
+            return NotFound();
         }
 
-        // Handle the request to delete a visitor
+        visitor.Status = status;
+        await _visitorService.UpdateVisitorAsync(visitor);
 
-
+        return Ok(new { success = true });
     }
+
 
 }

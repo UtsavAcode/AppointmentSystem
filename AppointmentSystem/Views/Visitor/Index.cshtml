@@ -25,7 +25,18 @@
                 <td>@visitor.Name</td>
                 <td>@visitor.MobileNumber</td>
                 <td>@visitor.EmailAddress</td>
-                <td>@visitor.Status ? "Active" : "Inactive"</td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input toggle-status"
+                               type="checkbox"
+                               id="flexSwitchCheckChecked_@visitor.Id"
+                               data-id="@visitor.Id"
+                        @(visitor.Status ? "checked" : "")>
+                        <label class="form-check-label" for="flexSwitchCheckChecked_@visitor.Id">
+                            @(visitor.Status ? "Active" : "Inactive")
+                        </label>
+                    </div>
+                </td>
                 <td>
                     <a href="@Url.Action("Details", "Visitor", new { id = visitor.Id })" class="btn btn-info">Details</a>
                     <a href="@Url.Action("Edit", "Visitor", new { id = visitor.Id })" class="btn btn-warning">Edit</a>
@@ -35,3 +46,38 @@
         }
     </tbody>
 </table>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            document.querySelectorAll('.toggle-status').forEach(element => {
+                element.addEventListener('change', async function () {
+                    const visitorId = this.dataset.id;
+                    const newStatus = this.checked;
+
+                    try {
+                        const response = await fetch(`/Visitor/ToggleStatus/${visitorId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'RequestVerificationToken': token
+                            },
+                            body: JSON.stringify({ status: newStatus })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Error updating status');
+                        }
+
+                        const label = this.nextElementSibling;
+                        label.textContent = newStatus ? 'Active' : 'Inactive';
+                    } catch (error) {
+                        alert('Failed to update status. Please try again.');
+                        this.checked = !newStatus; // Revert the toggle
+                    }
+                });
+            });
+        });
+    </script>
+}

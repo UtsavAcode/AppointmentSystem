@@ -6,19 +6,18 @@ namespace AppointmentSystem.Models.ViewModel
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Name is required.")]
-        [StringLength(100, ErrorMessage = "Name cannot be longer than 100 characters.")]
+        [Required(ErrorMessage = "Name is required")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Mobile number is required.")]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Mobile number must be a 10-digit number.")]
+        [Required(ErrorMessage = "Mobile Number is required")]
+        [RegularExpression(@"^\d+${11}", ErrorMessage = "Please enter valid mobile number")]
         public int MobileNumber { get; set; }
 
-        [Required(ErrorMessage = "Email address is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [Required(ErrorMessage = "Email Address is required")]
+        [EmailAddress(ErrorMessage = "Invalid Email Address")]
         public string EmailAddress { get; set; }
 
-        public bool Status { get; set; } = true;
+        public bool Status { get; set; }
     }
 }
 

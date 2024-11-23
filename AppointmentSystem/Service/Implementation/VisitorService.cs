@@ -56,31 +56,29 @@ namespace AppointmentSystem.Service.Implementation
         {
             var visitor = new Visitor
             {
-                Id = visitorViewModel.Id,
                 Name = visitorViewModel.Name,
                 MobileNumber = visitorViewModel.MobileNumber,
                 EmailAddress = visitorViewModel.EmailAddress,
-                Status = visitorViewModel.Status
+                Status = true  // Always set to true for new visitors
             };
-
             await _visitorRepository.InsertVisitorAsync(visitor);
         }
 
         // Update an existing visitor: Manually map VisitorViewModel to Visitor
         public async Task UpdateVisitorAsync(VisitorViewModel visitorViewModel)
         {
-            var visitor = new Visitor
+            var existingVisitor = await _visitorRepository.GetVisitorByIdAsync(visitorViewModel.Id);
+            if (existingVisitor != null)
             {
-                Id = visitorViewModel.Id,
-                Name = visitorViewModel.Name,
-                MobileNumber = visitorViewModel.MobileNumber,
-                EmailAddress = visitorViewModel.EmailAddress,
-                Status = visitorViewModel.Status
-            };
-
-            await _visitorRepository.UpdateVisitorAsync(visitor);
+                existingVisitor.Name = visitorViewModel.Name;
+                existingVisitor.MobileNumber = visitorViewModel.MobileNumber;
+                existingVisitor.EmailAddress = visitorViewModel.EmailAddress;
+                existingVisitor.Status = visitorViewModel.Status; // Include status update
+                await _visitorRepository.UpdateVisitorAsync(existingVisitor);
+            }
         }
 
-       
+
+
     }
 }

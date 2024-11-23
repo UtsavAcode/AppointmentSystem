@@ -40,26 +40,27 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task CreatePostAsync(PostViewModel model)
         {
-            // Ensure status is always true when creating
-            model.Status = true;
-
             var post = new Post
             {
                 Name = model.Name,
-                Status = true // Explicitly set to true
+                Status = model.Status // Use the status from the model
             };
+
             await _repository.AddAsync(post);
         }
+
         public async Task UpdatePostAsync(PostViewModel model)
         {
-            var post = new Post
+            var post = await _repository.GetByIdAsync(model.Id);
+            if (post == null)
             {
-                Id = model.Id,
-                Name = model.Name,
-           
-            };
+                throw new Exception("Post not found");
+            }
 
-            // Make sure the repository is updating the post correctly
+            // Update the name while preserving the status
+            post.Name = model.Name;
+            post.Status = model.Status;
+
             await _repository.UpdateAsync(post);
         }
 
@@ -70,5 +71,3 @@ namespace AppointmentSystem.Service.Implementation
         }
     }
 }
-
-
