@@ -47,7 +47,7 @@
 
     <script>
                 $(document).ready(function () {
-            // Client-side validation for work time comparison
+            
             $('form').on('submit', function (e) {
                 var startTime = $('#WorkStartTime').val();
                 var endTime = $('#WorkEndTime').val();
@@ -59,12 +59,11 @@
                 }
             });
 
-            // Remove the post status validation (do not check post status)
             $('#PostId').on('change', function () {
-                // Just allow post selection without any checks
-                var postId = $(this).val(); // Get the selected post ID
+             
+                var postId = $(this).val(); 
                 if (postId) {
-                    // You can still add any logic here if needed, but no validation on the post status
+                  
                     console.log('Post selected with ID: ' + postId);
                 }
             });

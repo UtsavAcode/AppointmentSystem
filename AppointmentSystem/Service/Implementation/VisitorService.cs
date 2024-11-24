@@ -24,7 +24,7 @@ namespace AppointmentSystem.Service.Implementation
                 return null;
             }
 
-            // Manual mapping
+       
             var visitorViewModel = new VisitorViewModel
             {
                 Id = visitor.Id,
@@ -37,7 +37,7 @@ namespace AppointmentSystem.Service.Implementation
             return visitorViewModel;
         }
 
-        // Manually map VisitorViewModel to Visitor
+        
         public async Task<IEnumerable<VisitorViewModel>> GetAllVisitorsAsync()
         {
             var visitors = await _visitorRepository.GetAllVisitorsAsync();
@@ -51,7 +51,7 @@ namespace AppointmentSystem.Service.Implementation
             });
         }
 
-        // Create a new visitor: Manually map VisitorViewModel to Visitor
+       
         public async Task CreateVisitorAsync(VisitorViewModel visitorViewModel)
         {
             var visitor = new Visitor
@@ -64,7 +64,7 @@ namespace AppointmentSystem.Service.Implementation
             await _visitorRepository.InsertVisitorAsync(visitor);
         }
 
-        // Update an existing visitor: Manually map VisitorViewModel to Visitor
+     
         public async Task UpdateVisitorAsync(VisitorViewModel visitorViewModel)
         {
             var existingVisitor = await _visitorRepository.GetVisitorByIdAsync(visitorViewModel.Id);

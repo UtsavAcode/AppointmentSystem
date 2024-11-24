@@ -10,21 +10,21 @@ namespace AppointmentSystem.Controllers
         private readonly IPostService _postService;
         private readonly IOfficerService _officerService;
 
-        public PostController(IPostService postService,IOfficerService officerService)
+        public PostController(IPostService postService, IOfficerService officerService)
         {
             _postService = postService;
             _officerService = officerService;
         }
 
-        // GET: /Post
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var posts = await _postService.GetAllPostsAsync();  // This returns IEnumerable<PostViewModel>
-            return View(posts);  // Pass the collection to the view
+            var posts = await _postService.GetAllPostsAsync();
+            return View(posts);
         }
 
-        // GET: /Post/Create
+
         [HttpGet]
         public IActionResult Create()
         {
@@ -50,7 +50,7 @@ namespace AppointmentSystem.Controllers
                 return View(model);
             }
 
-            // Force status to be true (active)
+
             model.Status = true;
 
             await _postService.CreatePostAsync(model);
@@ -69,7 +69,7 @@ namespace AppointmentSystem.Controllers
                 }
 
                 var activeOfficers = await _officerService.GetActiveOfficersByPostIdAsync(post.Id);
-                if (activeOfficers.Any() && !status) // Deactivating post with active officers
+                if (activeOfficers.Any() && !status)
                 {
                     return BadRequest("Cannot deactivate the post. There are active officers assigned to it.");
                 }
@@ -87,7 +87,7 @@ namespace AppointmentSystem.Controllers
 
 
 
-        // GET: /Post/Edit/{id}
+
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -100,7 +100,7 @@ namespace AppointmentSystem.Controllers
             return View(post);
         }
 
-        // POST: /Post/Edit
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(PostViewModel model)
@@ -112,16 +112,16 @@ namespace AppointmentSystem.Controllers
 
             try
             {
-                // Get the existing post
+
                 var existingPost = await _postService.GetPostByIdAsync(model.Id);
                 if (existingPost == null)
                 {
                     return NotFound();
                 }
 
-                // Update the model with the new name but keep the existing status
+
                 existingPost.Name = model.Name;
-                // Status remains unchanged as it's coming from the hidden field
+
 
                 await _postService.UpdatePostAsync(existingPost);
                 return RedirectToAction(nameof(Index));
@@ -136,7 +136,7 @@ namespace AppointmentSystem.Controllers
 
 
 
-        // GET: /Post/Details/{id}
+
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
@@ -149,7 +149,7 @@ namespace AppointmentSystem.Controllers
             return View(post);
         }
 
-        // GET: /Post/Delete/{id}
+
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -169,11 +169,11 @@ namespace AppointmentSystem.Controllers
             try
             {
                 await _postService.DeletePostAsync(id);
-                return RedirectToAction(nameof(Index)); // Redirect back to the post list
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                // Handle error (e.g., log it and return an error message to the user)
+
                 ModelState.AddModelError("", "An error occurred while deleting the post.");
                 return RedirectToAction(nameof(Index));
             }
@@ -186,12 +186,12 @@ namespace AppointmentSystem.Controllers
 
             if (result.success)
             {
-                // Post deactivated successfully, redirect or show success message
+
                 return RedirectToAction(nameof(Index));
             }
             else
             {
-                // Post deactivation failed, show error message
+
                 ViewData["Error"] = result.message;
                 return View("Details", await _postService.GetPostByIdAsync(postId));
             }

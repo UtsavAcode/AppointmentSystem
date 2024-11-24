@@ -79,7 +79,7 @@ namespace AppointmentSystem.Service.Implementation
             if (post == null)
                 return (false, "Post not found.");
 
-            post.Status = false; // Set the status to false for deactivation.
+            post.Status = false; 
 
             var success = await _postRepository.UpdateAsync(post);
             return success

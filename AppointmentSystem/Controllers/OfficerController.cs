@@ -37,13 +37,13 @@ namespace AppointmentSystem.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            // Populate the dropdown list for posts (example)
-            var posts = _postService.GetActivePostAsync().Result; // You can fetch posts asynchronously here
+           
+            var posts = _postService.GetActivePostAsync().Result; 
             ViewBag.Posts = new SelectList(posts, "Id", "Name");
             return View();
         }
 
-        // POST: Officer/Create
+      
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(OfficerViewModel model)
@@ -72,7 +72,7 @@ namespace AppointmentSystem.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var posts = _postService.GetActivePostAsync().Result; // You can fetch posts asynchronously here
+                var posts = _postService.GetActivePostAsync().Result;
                 ViewBag.Posts = new SelectList(posts, "Id", "Name");
                 return View(officer);
             }
@@ -91,10 +91,10 @@ namespace AppointmentSystem.Controllers
             if (ModelState.IsValid)
             {
                 await _officerService.UpdateOfficerAsync(model);
-                return RedirectToAction(nameof(Index)); // Redirect to Index after successful update
+                return RedirectToAction(nameof(Index)); 
             }
 
-            // Model is not valid, return the edit view with errors
+           
             return View(model);
 
         }
@@ -106,7 +106,7 @@ namespace AppointmentSystem.Controllers
             {
                 if (status)
                 {
-                    // Check if the associated post is active before activating the officer
+                    
                     var officer = await _officerService.GetOfficerByIdAsync(id);
                     if (officer != null)
                     {

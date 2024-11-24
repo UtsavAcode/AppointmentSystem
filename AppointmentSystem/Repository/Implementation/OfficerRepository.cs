@@ -70,7 +70,7 @@ namespace AppointmentSystem.Repository.Implementation
                 {
                     if (startTime < existingEnd && endTime > existingStart)
                     {
-                        return true; // Overlap exists
+                        return true; // Overlap exist
                     }
                 }
             }

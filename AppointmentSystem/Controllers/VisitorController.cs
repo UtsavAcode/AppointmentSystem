@@ -71,11 +71,11 @@ public class VisitorController : Controller
             {
                 return NotFound();
             }
-            // Update all fields including Status
+            
             existingVisitor.Name = model.Name;
             existingVisitor.MobileNumber = model.MobileNumber;
             existingVisitor.EmailAddress = model.EmailAddress;
-          // Preserve the existing status
+          
 
             await _visitorService.UpdateVisitorAsync(existingVisitor);
         
@@ -104,16 +104,16 @@ public class VisitorController : Controller
             var visitor = await _visitorService.GetVisitorByIdAsync(id);
             if (visitor == null)
             {
-                return NotFound(); // Post not found, return 404
+                return NotFound(); 
             }
 
             visitor.Status = status;
-            await _visitorService.UpdateVisitorAsync(visitor); // Ensure this method works properly
-            return Ok(); // Status updated successfully
+            await _visitorService.UpdateVisitorAsync(visitor); 
+            return Ok(); 
         }
         catch (Exception ex)
         {
-            // Log the exception here if needed for debugging
+            
             return StatusCode(500, "An error occurred while updating the status. " + ex.Message);
         }
     }

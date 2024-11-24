@@ -56,7 +56,7 @@ namespace AppointmentSystem.Service.Implementation
             var post = new Post
             {
                 Name = model.Name,
-                Status = model.Status // Use the status from the model
+                Status = model.Status 
             };
 
             await _repository.AddAsync(post);
@@ -97,7 +97,7 @@ namespace AppointmentSystem.Service.Implementation
                 return (false, "Post not found.");
             }
 
-            post.Status = false; // Set the status to false for deactivation.
+            post.Status = false; 
 
             var success = await _repository.UpdateAsync(post);
             return success
