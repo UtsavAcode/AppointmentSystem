@@ -8,7 +8,7 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <input type="hidden" asp-for="Id" />
-   
+    <input type="hidden" asp-for="Status" />
 
     <div class="form-group mb-3">
         <label asp-for="Name" class="control-label"></label>
@@ -28,7 +28,9 @@
         <span asp-validation-for="EmailAddress" class="text-danger"></span>
     </div>
 
-
+    <div class="form-group mt-2">
+        <label>Current Status: @(Model.Status ? "Active" : "Inactive")</label>
+    </div>
 
     <button type="submit" class="btn btn-primary">Save Changes</button>
     <a asp-action="Index" class="btn btn-secondary">Back to List</a>

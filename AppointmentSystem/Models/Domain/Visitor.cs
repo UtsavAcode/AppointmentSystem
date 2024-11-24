@@ -8,9 +8,6 @@
         public string EmailAddress { get; set; }
         public bool Status { get; set; } =true;
 
-        public Visitor()
-        {
-            Status = true;
-        }
+       
     }
 }

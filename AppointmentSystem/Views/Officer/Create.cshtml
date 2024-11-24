@@ -1,0 +1,74 @@
+﻿@model AppointmentSystem.Models.ViewModel.OfficerViewModel
+
+@{
+    ViewData["Title"] = "Create Officer";
+}
+
+<h2>Create Officer</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Name" class="control-label"></label>
+        <input asp-for="Name" class="form-control" id="Name" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="PostId" class="control-label"></label>
+        <select asp-for="PostId" class="form-control" asp-items="ViewBag.Posts" id="PostId">
+            <option value="">-- Select Post --</option>
+        </select>
+        <span asp-validation-for="PostId" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="WorkStartTime" class="control-label"></label>
+        <input asp-for="WorkStartTime" class="form-control" type="time" id="WorkStartTime" />
+        <span asp-validation-for="WorkStartTime" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="WorkEndTime" class="control-label"></label>
+        <input asp-for="WorkEndTime" class="form-control" type="time" id="WorkEndTime" />
+        <span asp-validation-for="WorkEndTime" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+                $(document).ready(function () {
+            // Client-side validation for work time comparison
+            $('form').on('submit', function (e) {
+                var startTime = $('#WorkStartTime').val();
+                var endTime = $('#WorkEndTime').val();
+
+                if (startTime && endTime && startTime >= endTime) {
+                    e.preventDefault();
+                    alert('Work end time must be after work start time');
+                    return false;
+                }
+            });
+
+            // Remove the post status validation (do not check post status)
+            $('#PostId').on('change', function () {
+                // Just allow post selection without any checks
+                var postId = $(this).val(); // Get the selected post ID
+                if (postId) {
+                    // You can still add any logic here if needed, but no validation on the post status
+                    console.log('Post selected with ID: ' + postId);
+                }
+            });
+        });
+
+    </script>
+}

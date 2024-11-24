@@ -1,4 +1,5 @@
 ﻿using AppointmentSystem.Models.ViewModel;
+using AppointmentSystem.Service.Implementation;
 using AppointmentSystem.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,27 +12,29 @@ public class VisitorController : Controller
         _visitorService = visitorService;
     }
 
+    [HttpGet]
     public async Task<IActionResult> Index()
     {
         var visitors = await _visitorService.GetAllVisitorsAsync();
         return View(visitors);
     }
 
+    [HttpGet]
     public IActionResult Create()
     {
-        return View(new VisitorViewModel());
+        return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Name,MobileNumber,EmailAddress")] VisitorViewModel visitorViewModel)
+    public async Task<IActionResult> Create(VisitorViewModel model)
     {
         if (ModelState.IsValid)
         {
             try
             {
-                await _visitorService.CreateVisitorAsync(visitorViewModel);
-                TempData["Success"] = "Visitor created successfully.";
+                await _visitorService.CreateVisitorAsync(model);
+
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -39,9 +42,10 @@ public class VisitorController : Controller
                 ModelState.AddModelError("", "Error creating visitor: " + ex.Message);
             }
         }
-        return View(visitorViewModel);
+        return View(model);
     }
 
+    [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
         var visitor = await _visitorService.GetVisitorByIdAsync(id);
@@ -54,53 +58,67 @@ public class VisitorController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,MobileNumber,EmailAddress,Status")] VisitorViewModel visitorViewModel)
+    public async Task<IActionResult> Edit( VisitorViewModel model)
     {
-        if (id != visitorViewModel.Id)
+        if (!ModelState.IsValid)
         {
-            return NotFound();
+            return View(model);
         }
+        try
+        {
+            var existingVisitor = await _visitorService.GetVisitorByIdAsync(model.Id);
+            if (existingVisitor == null)
+            {
+                return NotFound();
+            }
+            // Update all fields including Status
+            existingVisitor.Name = model.Name;
+            existingVisitor.MobileNumber = model.MobileNumber;
+            existingVisitor.EmailAddress = model.EmailAddress;
+          // Preserve the existing status
 
-        if (ModelState.IsValid)
-        {
-            try
-            {
-                await _visitorService.UpdateVisitorAsync(visitorViewModel);
-                TempData["Success"] = "Visitor updated successfully.";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                if (!await VisitorExists(id))
-                {
-                    return NotFound();
-                }
-                ModelState.AddModelError("", "Error updating visitor: " + ex.Message);
-            }
+            await _visitorService.UpdateVisitorAsync(existingVisitor);
+        
+            return RedirectToAction(nameof(Index));
         }
-        return View(visitorViewModel);
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Error updating visitor: " + ex.Message);
+            return View(model);
+        }
     }
+
 
     private async Task<bool> VisitorExists(int id)
     {
         var visitor = await _visitorService.GetVisitorByIdAsync(id);
         return visitor != null;
     }
+
+
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ToggleStatus(int id, [FromBody] bool status)
+    public async Task<IActionResult> ToggleStatus(int id, bool status)
     {
-        var visitor = await _visitorService.GetVisitorByIdAsync(id);
-        if (visitor == null)
+        try
         {
-            return NotFound();
+            var visitor = await _visitorService.GetVisitorByIdAsync(id);
+            if (visitor == null)
+            {
+                return NotFound(); // Post not found, return 404
+            }
+
+            visitor.Status = status;
+            await _visitorService.UpdateVisitorAsync(visitor); // Ensure this method works properly
+            return Ok(); // Status updated successfully
         }
-
-        visitor.Status = status;
-        await _visitorService.UpdateVisitorAsync(visitor);
-
-        return Ok(new { success = true });
+        catch (Exception ex)
+        {
+            // Log the exception here if needed for debugging
+            return StatusCode(500, "An error occurred while updating the status. " + ex.Message);
+        }
     }
+
+
 
 
 }

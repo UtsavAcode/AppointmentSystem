@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AppointmentSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241122170110_viitr")]
-    partial class viitr
+    [Migration("20241124072249_Officer")]
+    partial class Officer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,6 +23,40 @@ namespace AppointmentSystem.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("AppointmentSystem.Models.Domain.Officer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("WorkEndTime")
+                        .IsRequired()
+                        .HasColumnType("varchar(5)");
+
+                    b.Property<string>("WorkStartTime")
+                        .IsRequired()
+                        .HasColumnType("varchar(5)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("Officers");
+                });
 
             modelBuilder.Entity("AppointmentSystem.Models.Domain.Post", b =>
                 {
@@ -69,6 +103,17 @@ namespace AppointmentSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Visitors");
+                });
+
+            modelBuilder.Entity("AppointmentSystem.Models.Domain.Officer", b =>
+                {
+                    b.HasOne("AppointmentSystem.Models.Domain.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
                 });
 #pragma warning restore 612, 618
         }

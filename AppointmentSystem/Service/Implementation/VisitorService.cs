@@ -5,15 +5,15 @@ using AppointmentSystem.Service.Interface;
 
 namespace AppointmentSystem.Service.Implementation
 {
-    public class VisitorService:IVisitorService
+    public class VisitorService : IVisitorService
     {
         private readonly IVisitorRepository _visitorRepository;
-        
+
 
         public VisitorService(IVisitorRepository visitorRepository)
         {
             _visitorRepository = visitorRepository;
-            
+
         }
 
         public async Task<VisitorViewModel> GetVisitorByIdAsync(int id)
@@ -48,7 +48,7 @@ namespace AppointmentSystem.Service.Implementation
                 MobileNumber = v.MobileNumber,
                 EmailAddress = v.EmailAddress,
                 Status = v.Status
-            }).ToList();
+            });
         }
 
         // Create a new visitor: Manually map VisitorViewModel to Visitor
@@ -59,7 +59,7 @@ namespace AppointmentSystem.Service.Implementation
                 Name = visitorViewModel.Name,
                 MobileNumber = visitorViewModel.MobileNumber,
                 EmailAddress = visitorViewModel.EmailAddress,
-                Status = true  // Always set to true for new visitors
+                Status = visitorViewModel.Status,
             };
             await _visitorRepository.InsertVisitorAsync(visitor);
         }
@@ -73,10 +73,12 @@ namespace AppointmentSystem.Service.Implementation
                 existingVisitor.Name = visitorViewModel.Name;
                 existingVisitor.MobileNumber = visitorViewModel.MobileNumber;
                 existingVisitor.EmailAddress = visitorViewModel.EmailAddress;
-                existingVisitor.Status = visitorViewModel.Status; // Include status update
+                existingVisitor.Status = visitorViewModel.Status;
+               
                 await _visitorRepository.UpdateVisitorAsync(existingVisitor);
             }
         }
+
 
 
 

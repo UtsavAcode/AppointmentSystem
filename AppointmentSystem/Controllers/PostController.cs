@@ -1,4 +1,5 @@
 ﻿using AppointmentSystem.Models.ViewModel;
+using AppointmentSystem.Service.Implementation;
 using AppointmentSystem.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,10 +8,12 @@ namespace AppointmentSystem.Controllers
     public class PostController : Controller
     {
         private readonly IPostService _postService;
+        private readonly IOfficerService _officerService;
 
-        public PostController(IPostService postService)
+        public PostController(IPostService postService,IOfficerService officerService)
         {
             _postService = postService;
+            _officerService = officerService;
         }
 
         // GET: /Post
@@ -53,8 +56,8 @@ namespace AppointmentSystem.Controllers
             await _postService.CreatePostAsync(model);
             return RedirectToAction(nameof(Index));
         }
-     
-       [HttpPost]
+
+        [HttpPost]
         public async Task<IActionResult> ToggleStatus(int id, bool status)
         {
             try
@@ -62,17 +65,23 @@ namespace AppointmentSystem.Controllers
                 var post = await _postService.GetPostByIdAsync(id);
                 if (post == null)
                 {
-                    return NotFound(); // Post not found, return 404
+                    return NotFound("Post not found.");
+                }
+
+                var activeOfficers = await _officerService.GetActiveOfficersByPostIdAsync(post.Id);
+                if (activeOfficers.Any() && !status) // Deactivating post with active officers
+                {
+                    return BadRequest("Cannot deactivate the post. There are active officers assigned to it.");
                 }
 
                 post.Status = status;
-                await _postService.UpdatePostAsync(post); // Ensure this method works properly
-                return Ok(); // Status updated successfully
+                await _postService.UpdatePostAsync(post);
+                return Ok("Post status updated successfully.");
             }
             catch (Exception ex)
             {
-                // Log the exception here if needed for debugging
-                return StatusCode(500, "An error occurred while updating the status. " + ex.Message);
+
+                return StatusCode(500, "An error occurred while updating the status.");
             }
         }
 
@@ -170,6 +179,23 @@ namespace AppointmentSystem.Controllers
             }
         }
 
+
+        public async Task<IActionResult> DeactivatePost(int postId)
+        {
+            var result = await _postService.DeactivatePostAsync(postId);
+
+            if (result.success)
+            {
+                // Post deactivated successfully, redirect or show success message
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                // Post deactivation failed, show error message
+                ViewData["Error"] = result.message;
+                return View("Details", await _postService.GetPostByIdAsync(postId));
+            }
+        }
 
     }
 }

@@ -7,7 +7,8 @@ namespace AppointmentSystem.Repository.Interface
         Task<Post> GetByIdAsync(int id);
         Task<IEnumerable<Post>> GetAllAsync();
         Task AddAsync(Post post);
-        Task UpdateAsync(Post post);
+        Task<bool> UpdateAsync(Post post);
+        Task<IEnumerable<Post>> GetActivePostAsync();
         Task DeleteAsync(int id);
     }
 }

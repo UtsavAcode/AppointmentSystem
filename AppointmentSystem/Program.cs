@@ -13,6 +13,8 @@ builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IVisitorRepository, VisitorRepository>();
 builder.Services.AddScoped<IVisitorService, VisitorService>();
+builder.Services.AddScoped<IOfficerRepository, OfficerRepository>();
+builder.Services.AddScoped<IOfficerService, OfficerService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

@@ -1,0 +1,82 @@
+﻿@model IEnumerable<AppointmentSystem.Models.ViewModel.OfficerViewModel>
+@{
+    ViewData["Title"] = "Officers";
+}
+
+<h2>Officers</h2>
+<a href="@Url.Action("Create", "Officer")" class="btn btn-primary mb-3">Add New Officer</a>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Work Hours</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var officer in Model)
+        {
+            <tr>
+                <td>@officer.Name</td>
+       
+                <td>@officer.WorkStartTime - @officer.WorkEndTime</td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input toggle-status"
+                               type="checkbox"
+                               id="flexSwitchCheckChecked@(officer.Id)"
+                               data-officer-id="@officer.Id"
+                        @(officer.Status ? "checked" : "")>
+                        <label class="form-check-label" for="flexSwitchCheckChecked@(officer.Id)">
+                            @(officer.Status ? "Active" : "Inactive")
+                        </label>
+                    </div>
+                </td>
+                <td>
+                    <a href="@Url.Action("Edit", "Officer", new { id = officer.Id })" class="btn btn-warning">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.toggle-status').change(function() {
+                var officerId = $(this).data('officer-id');
+                var isActive = $(this).is(':checked');
+                var toggleElement = $(this);
+                var label = $(`label[for="flexSwitchCheckChecked${officerId}"]`);
+
+                $.ajax({
+                    url: '/Officer/ToggleStatus',
+                    type: 'POST',
+                    data: {
+                        id: officerId,
+                        status: isActive
+                    },
+                    success: function(response) {
+                        label.text(isActive ? 'Active' : 'Inactive');
+                    },
+                    error: function(xhr) {
+                        toggleElement.prop('checked', !isActive); // Revert the toggle
+                        label.text(!isActive ? 'Active' : 'Inactive');
+                        alert(xhr.responseText || 'Failed to update status');
+                    }
+                });
+            });
+        });
+    </script>
+}

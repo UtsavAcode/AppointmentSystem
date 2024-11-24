@@ -1,4 +1,5 @@
 ﻿using AppointmentSystem.Models.ViewModel;
+using System.Threading.Tasks;
 
 namespace AppointmentSystem.Service.Interface
 {
@@ -9,5 +10,7 @@ namespace AppointmentSystem.Service.Interface
         Task CreatePostAsync(PostViewModel model);
         Task UpdatePostAsync(PostViewModel model);
         Task DeletePostAsync(int id);
+        Task<IEnumerable<PostViewModel>> GetActivePostAsync();
+        Task<(bool success, string message)> DeactivatePostAsync(int postId);
     }
 }

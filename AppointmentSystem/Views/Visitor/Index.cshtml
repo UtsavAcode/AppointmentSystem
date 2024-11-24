@@ -27,20 +27,20 @@
                 <td>@visitor.EmailAddress</td>
                 <td>
                     <div class="form-check form-switch">
-                        <input class="form-check-input toggle-status"
+                        <input class="form-check-input status-toggle"
                                type="checkbox"
-                               id="flexSwitchCheckChecked_@visitor.Id"
-                               data-id="@visitor.Id"
+                               id="flexSwitchCheckChecked@(visitor.Id)"
+                               data-visitor-id="@visitor.Id"
                         @(visitor.Status ? "checked" : "")>
-                        <label class="form-check-label" for="flexSwitchCheckChecked_@visitor.Id">
+                        <label class="form-check-label" for="flexSwitchCheckChecked@(visitor.Id)">
                             @(visitor.Status ? "Active" : "Inactive")
                         </label>
                     </div>
                 </td>
                 <td>
-                    <a href="@Url.Action("Details", "Visitor", new { id = visitor.Id })" class="btn btn-info">Details</a>
+  
                     <a href="@Url.Action("Edit", "Visitor", new { id = visitor.Id })" class="btn btn-warning">Edit</a>
-                    <a href="@Url.Action("Delete", "Visitor", new { id = visitor.Id })" class="btn btn-danger">Delete</a>
+           
                 </td>
             </tr>
         }
@@ -48,36 +48,32 @@
 </table>
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+               $(document).ready(function() {
+            // Handling the status toggle change
+            $('.status-toggle').change(function() {
+                var visitorId = $(this).data('visitor-id'); // Fix here
+                var isActive = $(this).is(':checked');
 
-            document.querySelectorAll('.toggle-status').forEach(element => {
-                element.addEventListener('change', async function () {
-                    const visitorId = this.dataset.id;
-                    const newStatus = this.checked;
-
-                    try {
-                        const response = await fetch(`/Visitor/ToggleStatus/${visitorId}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'RequestVerificationToken': token
-                            },
-                            body: JSON.stringify({ status: newStatus })
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Error updating status');
-                        }
-
-                        const label = this.nextElementSibling;
-                        label.textContent = newStatus ? 'Active' : 'Inactive';
-                    } catch (error) {
-                        alert('Failed to update status. Please try again.');
-                        this.checked = !newStatus; // Revert the toggle
+                $.ajax({
+                    url: '/Visitor/ToggleStatus',
+                    type: 'POST',
+                    data: {
+                        id: visitorId, // Use visitorId correctly
+                        status: isActive
+                    },
+                    success: function(response) {
+                        // Update the label text dynamically based on status
+                        var label = $(`label[for="flexSwitchCheckChecked${visitorId}"]`);
+                        label.text(isActive ? 'Active' : 'Inactive');
+                    },
+                    error: function() {
+                        // If the AJAX request fails, revert the switch to its previous state
+                        $(this).prop('checked', !isActive); // Revert toggle
+                        alert('Failed to update status');
                     }
                 });
             });
         });
+
     </script>
 }
