@@ -12,7 +12,7 @@ namespace AppointmentSystem.Service.Interface
         Task<bool> ToggleOfficerStatusAsync(int id, bool status);
         Task<(bool success, string message)> DeactivatePostAsync(int postId);
         Task CreateOfficerAsync(OfficerViewModel model);
-
+        Task<IEnumerable<Officer>> GetActiveOfficersAsync();
         Task<IEnumerable<Officer>> GetActiveOfficersByPostIdAsync(int postId);
     }
 }

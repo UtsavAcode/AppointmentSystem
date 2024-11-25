@@ -31,13 +31,7 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task<IEnumerable<AllOfficerViewModel>> GetAllOfficersWithPostAsync()
         {
-            // Use the repository method directly
             var officers = await _officerRepository.GetAllOfficersAsync();
-
-            // Map to view models (optional)
-            // You can choose to handle mapping here if desired
-            // return officers.Select(...); // Implement mapping logic
-
             return officers;
         }
     
@@ -115,6 +109,11 @@ namespace AppointmentSystem.Service.Implementation
             return await _context.Officers
                 .Where(o => o.PostId == postId && o.Status == true)
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Officer>> GetActiveOfficersAsync()
+        {
+            return await _context.Officers.Where(o=>o.Status==true).ToListAsync();
         }
 
         public async Task CreateOfficerAsync(OfficerViewModel model)

@@ -1,0 +1,60 @@
+﻿@model AppointmentSystem.Models.ViewModel.WorkDayViewModel
+
+@{
+    ViewData["Title"] = "Add Workday";
+}
+
+<h1>Add Workday</h1>
+
+
+@if (ViewData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @ViewData["ErrorMessage"]
+    </div>
+}
+
+<form asp-action="AddWorkDay" method="post">
+    <div class="form-group">
+        <label asp-for="DayOfWeek" class="control-label"></label>
+        <input asp-for="DayOfWeek" class="form-control" />
+        <span asp-validation-for="DayOfWeek" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="OfficerId" class="control-label"></label>
+        <select asp-for="OfficerId" class="form-control" asp-items="ViewBag.Officers" id="OfficerId">
+            <option value="">-- Select Officer --</option>
+        </select>
+        <span asp-validation-for="OfficerId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Workday</button>
+</form>
+
+<a href="@Url.Action("Index", "WorkDay")" class="btn btn-secondary">Back to Workdays</a>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dayOfWeekInput = document.querySelector('input[name="DayOfWeek"]');
+        dayOfWeekInput.addEventListener("input", function () {
+            const value = parseInt(this.value, 10);
+            if (value < 1) {
+                this.value = 1; 
+            }
+            if (value > 7) {
+                this.value = 7;
+            }
+        });
+
+        
+        dayOfWeekInput.addEventListener("blur", function () {
+            const value = parseInt(this.value, 10);
+            if (value < 1 || value > 7 || isNaN(value)) {
+                this.setCustomValidity("Please enter a valid number between 1 and 7.");
+            } else {
+                this.setCustomValidity(""); 
+            }
+        });
+    });
+</script>

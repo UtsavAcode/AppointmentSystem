@@ -2,6 +2,7 @@
 using AppointmentSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AppointmentSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241125070841_workdats")]
+    partial class workdats
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,7 +104,7 @@ namespace AppointmentSystem.Migrations
                     b.ToTable("Visitors");
                 });
 
-            modelBuilder.Entity("AppointmentSystem.Models.Domain.WorkDay", b =>
+            modelBuilder.Entity("AppointmentSystem.Models.Domain.WorkDays", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -133,7 +136,7 @@ namespace AppointmentSystem.Migrations
                     b.Navigation("Post");
                 });
 
-            modelBuilder.Entity("AppointmentSystem.Models.Domain.WorkDay", b =>
+            modelBuilder.Entity("AppointmentSystem.Models.Domain.WorkDays", b =>
                 {
                     b.HasOne("AppointmentSystem.Models.Domain.Officer", "Officer")
                         .WithMany()
