@@ -17,8 +17,11 @@ namespace AppointmentSystem.Service.Implementation
         public async Task AddWorkDayAsync(WorkDayViewModel model)
         {
 
-            var existingDay = await _repository.GetByOfficerIdAndDayAsync(model.OfficerId, model.DayOfWeek);
-            if (existingDay != null) { throw new InvalidOperationException($"Officer with ID {model.OfficerId} is already assigned to Day {model.DayOfWeek}."); }
+            var existingDay = await _repository.GetByOfficerIdAsync(model.OfficerId);
+            if (existingDay != null)
+            {
+                throw new InvalidOperationException($"Officer with ID {model.OfficerId} is already assigned to Day"); 
+            }
 
             var day = new WorkDay
             {
@@ -26,10 +29,9 @@ namespace AppointmentSystem.Service.Implementation
                 OfficerId = model.OfficerId,
             };
 
-            if (day != null)
-            {
-                await _repository.AddAsync(day);
-            }
+
+            await _repository.AddAsync(day);
+
         }
         public async Task<IEnumerable<AllWorkDaysViewModel>> GetAllWorkDaysAsync()
         {
@@ -51,20 +53,23 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task UpdateWorkDayAsync(WorkDayViewModel model)
         {
-           
+
+            var existingOfficer = await _repository.GetByOfficerIdAndDayAsync(model.OfficerId,model.DayOfWeek);
+            if (existingOfficer != null) { throw new InvalidOperationException($"Officer with ID {model.OfficerId} is already assigned to Day {model.DayOfWeek}."); }
+
             var existingDay = await _repository.GetByIdAsync(model.Id);
 
-         
+
             if (existingDay == null)
             {
                 throw new InvalidOperationException($"WorkDay with ID {model.Id} not found.");
             }
 
-         
+
             existingDay.DayOfWeek = model.DayOfWeek;
             existingDay.OfficerId = model.OfficerId;
 
-        
+
             await _repository.UpdateAsync(existingDay);
         }
 

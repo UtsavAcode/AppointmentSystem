@@ -4,6 +4,13 @@
     ViewData["Title"] = "Edit WorkDay";
 }
 
+@if (ViewData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @ViewData["ErrorMessage"]
+    </div>
+}
+
 <h1>Edit WorkDay</h1>
 
 <form asp-action="Edit" method="post">
@@ -27,13 +34,27 @@
     <a href="@Url.Action("Index", "WorkDay")" class="btn btn-secondary">Cancel</a>
 </form>
 
-        <script>
+<script>
     document.addEventListener("DOMContentLoaded", function () {
-        const dayOfWeekInput = document.querySelector('input[name="DayOfWeek"]');
-        dayOfWeekInput.addEventListener("input", function () {
-            const value = parseInt(this.value, 10);
-            if (value < 1) this.value = 1; 
-            if (value > 7) this.value = 7; 
-        });
-    });
+         const dayOfWeekInput = document.querySelector('input[name="DayOfWeek"]');
+         dayOfWeekInput.addEventListener("input", function () {
+             const value = parseInt(this.value, 10);
+             if (value < 1) {
+                 this.value = 1;
+             }
+             if (value > 7) {
+                 this.value = 7;
+             }
+         });
+
+
+         dayOfWeekInput.addEventListener("blur", function () {
+             const value = parseInt(this.value, 10);
+             if (value < 1 || value > 7 || isNaN(value)) {
+                 this.setCustomValidity("Please enter a valid number between 1 and 7.");
+             } else {
+                 this.setCustomValidity("");
+             }
+         });
+     });
 </script>

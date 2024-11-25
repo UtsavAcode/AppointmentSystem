@@ -10,6 +10,7 @@ namespace AppointmentSystem.Repository.Interface
         Task AddAsync(WorkDay workDay);
         Task UpdateAsync(WorkDay workDay);
         Task<WorkDay> GetByOfficerIdAndDayAsync(int officerId, int dayOfWeek);
+        Task<WorkDay> GetByOfficerIdAsync(int officerId);
 
 
     }

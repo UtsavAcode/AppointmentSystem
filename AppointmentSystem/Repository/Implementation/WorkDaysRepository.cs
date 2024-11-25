@@ -69,5 +69,11 @@ namespace AppointmentSystem.Repository.Implementation
                 .FirstOrDefaultAsync(wd => wd.OfficerId == officerId && wd.DayOfWeek == dayOfWeek);
         }
 
+        public async Task<WorkDay> GetByOfficerIdAsync(int officerId)
+        {
+            return await _context.WorkDays
+                .FirstOrDefaultAsync(x => x.OfficerId == officerId);
+        }
+
     }
 }

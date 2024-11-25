@@ -38,9 +38,18 @@ namespace AppointmentSystem.Controllers
                 return BadRequest("Work model is null");
             }
 
-            await _service.AddWorkDayAsync(model);
-            return RedirectToAction("Index");
-
+            try
+            {
+                await _service.AddWorkDayAsync(model);
+                return RedirectToAction("Index");
+            }
+            catch (InvalidOperationException ex)
+            {
+                ViewData["ErrorMessage"] = ex.Message;
+                var officers = await _officerService.GetActiveOfficersAsync();
+                ViewBag.Officers = new SelectList(officers, "Id", "Name");
+                return View(model);
+            }
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -83,10 +92,11 @@ namespace AppointmentSystem.Controllers
                 await _service.UpdateWorkDayAsync(model);
                 return RedirectToAction("Index");
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                
-                ModelState.AddModelError("", ex.Message);
+                ViewData["ErrorMessage"] = ex.Message;
+                var officers = await _officerService.GetActiveOfficersAsync();
+                ViewBag.Officers = new SelectList(officers, "Id", "Name");
                 return View(model);
             }
         }
