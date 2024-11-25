@@ -1,0 +1,54 @@
+﻿@model IEnumerable<AppointmentSystem.Models.ViewModel.AppointmentViewmodel>
+
+@{
+    ViewData["Title"] = "Appointments";
+}
+
+<h1>Appointments</h1>
+
+<a href="@Url.Action("Create", "Appointment")" class="btn btn-primary mb-3">Add Appointment</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            @* <th>Officer</th> *@
+            @* <th>Visitor</th> *@
+            <th>Date</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int counter = 1;
+            foreach (var appointment in Model)
+            {
+                <tr>
+                    <td>@counter++</td>
+                    <td>@appointment.Name</td>
+                    @* <td>@appointment.OfficerName</td> *@
+                    @* <td>@appointment.VisitorName</td> *@
+                    <td>@appointment.Date.ToShortDateString()</td>
+                    <td>@appointment.StartTime.ToShortTimeString()</td>
+                    <td>@appointment.EndTime.ToShortTimeString()</td>
+                    <td>@appointment.Status</td>
+                    <td>
+                        <a href="@Url.Action("Edit", "Appointment", new { id = appointment.Id })" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="@Url.Action("Cancel", "Appointment", new { id = appointment.Id })" class="btn btn-sm btn-danger">Cancel</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="9" class="text-center">No appointments found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

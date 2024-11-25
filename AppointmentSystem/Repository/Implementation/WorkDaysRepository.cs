@@ -1,5 +1,5 @@
 ﻿using AppointmentSystem.Data;
-using AppointmentSystem.Migrations;
+
 using AppointmentSystem.Models.Domain;
 using AppointmentSystem.Models.ViewModel;
 using AppointmentSystem.Repository.Interface;

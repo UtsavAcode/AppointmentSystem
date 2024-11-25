@@ -6,7 +6,7 @@ using System;
 
 namespace AppointmentSystem.Repository.Implementation
 {
-    public class VisitorRepository:IVisitorRepository
+    public class VisitorRepository : IVisitorRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -47,5 +47,16 @@ namespace AppointmentSystem.Repository.Implementation
                 await _context.SaveChangesAsync();
             }
         }
+
+     
+   
+
+        public async Task<IEnumerable<Visitor>> GetActiveVisitorsAsync()
+        {
+            return await _context.Visitors
+                .Where(v => v.Status == true)
+                .ToListAsync();
+        }
+
     }
 }

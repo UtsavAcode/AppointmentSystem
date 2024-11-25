@@ -79,8 +79,19 @@ namespace AppointmentSystem.Service.Implementation
             }
         }
 
+        public async Task<IEnumerable<VisitorViewModel>> GetActiveVisitorsAsync()
+        {
+            var activeVisitors = await _visitorRepository.GetActiveVisitorsAsync();
+            var visitorViewModels = activeVisitors.Select(v => new VisitorViewModel
+            {
+                Id = v.Id,
+                Name = v.Name,
+                Status = v.Status,
+              
+            });
 
-
+            return visitorViewModels;
+        }
 
     }
 }

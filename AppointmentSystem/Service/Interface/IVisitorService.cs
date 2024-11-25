@@ -1,4 +1,5 @@
-﻿using AppointmentSystem.Models.ViewModel;
+﻿using AppointmentSystem.Models.Domain;
+using AppointmentSystem.Models.ViewModel;
 
 namespace AppointmentSystem.Service.Interface
 {
@@ -8,6 +9,8 @@ namespace AppointmentSystem.Service.Interface
         Task<IEnumerable<VisitorViewModel>> GetAllVisitorsAsync();
         Task CreateVisitorAsync(VisitorViewModel visitorViewModel);
         Task UpdateVisitorAsync(VisitorViewModel visitorViewModel);
-     
+        Task<IEnumerable<VisitorViewModel>> GetActiveVisitorsAsync();
+
+
     }
 }

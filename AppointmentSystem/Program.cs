@@ -17,9 +17,11 @@ builder.Services.AddScoped<IOfficerRepository, OfficerRepository>();
 builder.Services.AddScoped<IOfficerService, OfficerService>();
 builder.Services.AddScoped<IWorkDaysRepository, WorkDaysRepository>();
 builder.Services.AddScoped<IWorkdaysService, WorkdaysService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddLogging();
 
 var app = builder.Build();
 

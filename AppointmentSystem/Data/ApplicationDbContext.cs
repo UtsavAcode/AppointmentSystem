@@ -12,5 +12,6 @@ namespace AppointmentSystem.Data
         public DbSet<Visitor> Visitors { get; set; }
         public DbSet<Officer> Officers { get; set; }
         public DbSet<WorkDay> WorkDays { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
     }
 }
