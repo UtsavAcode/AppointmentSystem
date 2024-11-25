@@ -15,9 +15,8 @@
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
-
     <div class="form-group mb-3">
-        <label asp-for="PostId" class="control-label"></label>
+        <label asp-for="PostId" class="control-label">Post</label>
         <select asp-for="PostId" class="form-control" asp-items="ViewBag.Posts">
             <option value="">-- Select Post --</option>
         </select>

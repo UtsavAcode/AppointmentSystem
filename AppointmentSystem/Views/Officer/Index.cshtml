@@ -1,4 +1,4 @@
-﻿@model IEnumerable<AppointmentSystem.Models.ViewModel.OfficerViewModel>
+﻿@model IEnumerable<AppointmentSystem.Models.ViewModel.AllOfficerViewModel>
 @{
     ViewData["Title"] = "Officers";
 }
@@ -20,6 +20,7 @@
         <tr>
             <th>Name</th>
             <th>Work Hours</th>
+           <th>Post</th>
             <th>Status</th>
             <th>Actions</th>
         </tr>
@@ -31,6 +32,8 @@
                 <td>@officer.Name</td>
        
                 <td>@officer.WorkStartTime - @officer.WorkEndTime</td>
+                <td>@officer.PostName</td>
+
                 <td>
                     <div class="form-check form-switch">
                         <input class="form-check-input toggle-status"

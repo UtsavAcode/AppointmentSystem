@@ -24,7 +24,7 @@ namespace AppointmentSystem.Controllers
         {
             try
             {
-                var officers = await _officerService.GetAllOfficersAsync();
+                var officers = await _officerService.GetAllOfficersWithPostAsync();
                 return View(officers);
             }
             catch (Exception ex)
@@ -37,13 +37,13 @@ namespace AppointmentSystem.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-           
-            var posts = _postService.GetActivePostAsync().Result; 
+
+            var posts = _postService.GetActivePostAsync().Result;
             ViewBag.Posts = new SelectList(posts, "Id", "Name");
             return View();
         }
 
-      
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(OfficerViewModel model)
@@ -57,7 +57,6 @@ namespace AppointmentSystem.Controllers
             return View(model);
 
         }
-
 
 
         [HttpGet]
@@ -91,10 +90,10 @@ namespace AppointmentSystem.Controllers
             if (ModelState.IsValid)
             {
                 await _officerService.UpdateOfficerAsync(model);
-                return RedirectToAction(nameof(Index)); 
+                return RedirectToAction(nameof(Index));
             }
 
-           
+
             return View(model);
 
         }

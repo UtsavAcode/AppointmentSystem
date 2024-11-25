@@ -1,11 +1,12 @@
 ﻿using AppointmentSystem.Data;
 using AppointmentSystem.Models.Domain;
+using AppointmentSystem.Models.ViewModel;
 using AppointmentSystem.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppointmentSystem.Repository.Implementation
 {
-    public class OfficerRepository:IOfficerRepository
+    public class OfficerRepository: IOfficerRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -14,11 +15,22 @@ namespace AppointmentSystem.Repository.Implementation
             _context = context;
         }
 
-        public async Task<IEnumerable<Officer>> GetAllOfficersAsync()
+        public async Task<IEnumerable<AllOfficerViewModel>> GetAllOfficersAsync()
         {
-            return await _context.Officers
+            var officers = await _context.Officers
                 .Include(o => o.Post)
                 .ToListAsync();
+
+            return officers.Select(o => new AllOfficerViewModel
+            {
+                Id = o.Id,
+                Name = o.Name,
+                PostId = o.PostId,
+                Status = o.Status,
+                WorkStartTime = o.WorkStartTime,
+                WorkEndTime = o.WorkEndTime,
+                PostName = o.Post?.Name // Set PostName only if Post exists
+            }).ToList();
         }
 
         public async Task<Officer> GetOfficerByIdAsync(int id)
@@ -40,7 +52,7 @@ namespace AppointmentSystem.Repository.Implementation
             return await _context.SaveChangesAsync() > 0;
         }
 
-   
+
 
         public async Task<IEnumerable<Officer>> GetActiveOfficersByPostIdAsync(int postId)
         {
@@ -84,5 +96,7 @@ namespace AppointmentSystem.Repository.Implementation
                 .Where(o => o.PostId == postId && o.Status)
                 .ToListAsync();
         }
+
+       
     }
 }

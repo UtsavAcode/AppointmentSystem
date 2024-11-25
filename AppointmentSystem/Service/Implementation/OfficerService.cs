@@ -4,6 +4,7 @@ using AppointmentSystem.Models.ViewModel;
 using AppointmentSystem.Repository.Interface;
 using AppointmentSystem.Service.Interface;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace AppointmentSystem.Service.Implementation
 {
@@ -20,12 +21,6 @@ namespace AppointmentSystem.Service.Implementation
             _context = context;
         }
 
-        public async Task<IEnumerable<OfficerViewModel>> GetAllOfficersAsync()
-        {
-            var officers = await _officerRepository.GetAllOfficersAsync();
-            return officers.Select(MapToViewModel);
-        }
-
         public async Task<OfficerViewModel> GetOfficerByIdAsync(int id)
         {
             var officer = await _officerRepository.GetOfficerByIdAsync(id);
@@ -34,9 +29,18 @@ namespace AppointmentSystem.Service.Implementation
 
 
 
+        public async Task<IEnumerable<AllOfficerViewModel>> GetAllOfficersWithPostAsync()
+        {
+            // Use the repository method directly
+            var officers = await _officerRepository.GetAllOfficersAsync();
 
+            // Map to view models (optional)
+            // You can choose to handle mapping here if desired
+            // return officers.Select(...); // Implement mapping logic
 
-
+            return officers;
+        }
+    
         public async Task UpdateOfficerAsync(OfficerViewModel model)
         {
             var existingUser = await _officerRepository.GetOfficerByIdAsync(model.Id);
@@ -51,6 +55,7 @@ namespace AppointmentSystem.Service.Implementation
 
             }
         }
+
 
         public async Task<bool> ToggleOfficerStatusAsync(int id, bool status)
         {
@@ -79,7 +84,7 @@ namespace AppointmentSystem.Service.Implementation
             if (post == null)
                 return (false, "Post not found.");
 
-            post.Status = false; 
+            post.Status = false;
 
             var success = await _postRepository.UpdateAsync(post);
             return success
@@ -108,7 +113,7 @@ namespace AppointmentSystem.Service.Implementation
         public async Task<IEnumerable<Officer>> GetActiveOfficersByPostIdAsync(int postId)
         {
             return await _context.Officers
-                .Where(o => o.PostId == postId && o.Status==true)
+                .Where(o => o.PostId == postId && o.Status == true)
                 .ToListAsync();
         }
 
@@ -131,5 +136,7 @@ namespace AppointmentSystem.Service.Implementation
             }
 
         }
+
+       
     }
 }

@@ -5,7 +5,7 @@ namespace AppointmentSystem.Service.Interface
 {
     public interface IOfficerService
     {
-        Task<IEnumerable<OfficerViewModel>> GetAllOfficersAsync();
+        Task<IEnumerable<AllOfficerViewModel>> GetAllOfficersWithPostAsync();
         Task<OfficerViewModel> GetOfficerByIdAsync(int id);
   
         Task UpdateOfficerAsync(OfficerViewModel model);
