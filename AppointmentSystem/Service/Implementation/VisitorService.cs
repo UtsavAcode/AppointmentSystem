@@ -59,7 +59,7 @@ namespace AppointmentSystem.Service.Implementation
                 Name = visitorViewModel.Name,
                 MobileNumber = visitorViewModel.MobileNumber,
                 EmailAddress = visitorViewModel.EmailAddress,
-                Status = visitorViewModel.Status,
+                Status = visitorViewModel.Status=true,
             };
             await _visitorRepository.InsertVisitorAsync(visitor);
         }

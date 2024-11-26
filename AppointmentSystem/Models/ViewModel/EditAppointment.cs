@@ -1,22 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using static AppointmentSystem.Models.Domain.Appointment;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using static AppointmentSystem.Models.Domain.Appointment;
 
 namespace AppointmentSystem.Models.ViewModel
 {
-    public class AppointmentViewmodel
+    public class EditAppointment
     {
         public int Id { get; set; }
-
-        [Required]
+       
         [Display(Name = "Officer")]
         public int OfficerId { get; set; }
 
-        [Required]
+        
         [Display(Name = "Visitor")]
         public int VisitorId { get; set; }
 
-        [Required]
+        
         [MaxLength(100)]
         public string Name { get; set; }
 
@@ -37,8 +36,5 @@ namespace AppointmentSystem.Models.ViewModel
 
         [Column(TypeName = "Date")]
         public DateTime LastUpdatedOn { get; set; }
-
-        public AppointmentStatus Status { get; set; }
-
     }
 }

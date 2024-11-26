@@ -1,0 +1,93 @@
+﻿@model AppointmentSystem.Models.ViewModel.EditAppointment
+
+@{
+    ViewData["Title"] = "Edit Appointment";
+}
+
+<div id="edit-appointment-container" class="container mt-5">
+    <h2>Edit Appointment</h2>
+
+    <form id="edit-appointment-form" asp-action="Edit" method="post">
+        <div id="validation-summary" class="alert alert-danger" style="display: none;"></div>
+
+        <div class="form-group">
+            <label asp-for="Name" class="control-label"></label>
+            <input asp-for="Name" class="form-control" placeholder="Enter Appointment Name" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="OfficerId" class="control-label"></label>
+            <select asp-for="OfficerId" class="form-control" asp-items="ViewBag.Officers">
+                <option value="">-- Select Officer --</option>
+            </select>
+            <span asp-validation-for="OfficerId" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="VisitorId" class="control-label"></label>
+            <select asp-for="VisitorId" class="form-control" asp-items="ViewBag.Visitors">
+                <option value="">-- Select Visitor --</option>
+            </select>
+            <span asp-validation-for="VisitorId" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Date" class="control-label"></label>
+            <input asp-for="Date" class="form-control" type="date" />
+            <span asp-validation-for="Date" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StartTime" class="control-label"></label>
+            <input asp-for="StartTime" class="form-control" type="time" />
+            <span asp-validation-for="StartTime" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="EndTime" class="control-label"></label>
+            <input asp-for="EndTime" class="form-control" type="time" />
+            <span asp-validation-for="EndTime" class="text-danger"></span>
+        </div>
+
+
+        <div class="form-group mt-4">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#edit-appointment-form").on("submit", function (e) {
+                e.preventDefault();
+
+                let form = $(this);
+                let url = form.attr("action");
+                let formData = form.serialize();
+
+                $.post(url, formData)
+                    .done(function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            let errors = response.errors;
+                            let errorHtml = "<ul>";
+                            errors.forEach(function (error) {
+                                errorHtml += `<li>${error}</li>`;
+                            });
+                            errorHtml += "</ul>";
+                            $("#validation-summary").html(errorHtml).show();
+                        }
+                    })
+                    .fail(function () {
+                        alert("An error occurred. Please try again.");
+                    });
+            });
+        });
+    </script>
+}

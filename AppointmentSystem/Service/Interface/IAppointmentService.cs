@@ -5,9 +5,9 @@ namespace AppointmentSystem.Service.Interface
     public interface IAppointmentService
     {
         Task CreateAsync(AppointmentViewmodel model);
-        Task UpdateAsync (AppointmentViewmodel model);
+        Task UpdateAsync (EditAppointment model);
         Task <AppointmentViewmodel> GetAsync (int id);
-        Task <List<AppointmentViewmodel>> GetAllAsync ();
+        Task <List<AllAppointmentViewmodel>> GetAllAsync ();
         Task CancelAsync(int id);
     }
 }

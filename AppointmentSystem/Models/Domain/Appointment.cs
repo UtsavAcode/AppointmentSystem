@@ -15,13 +15,13 @@ namespace AppointmentSystem.Models.Domain
         public string Name { get; set; }
         public AppointmentStatus Status { get; set; } = AppointmentStatus.Active;
         public DateTime Date { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
         public DateTime AddedOn { get; set; }
         public DateTime LastUpdatedOn { get; set; }
 
 
-        public Officer Officer { get; set; } 
+        public Officer Officer { get; set; }
         public Visitor Visitor { get; set; }
 
         public enum AppointmentStatus

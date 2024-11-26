@@ -7,12 +7,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AppointmentSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class reAppointmentsxzxx : Migration
+    public partial class check : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            
+           
 
             migrationBuilder.CreateTable(
                 name: "Appointments",
@@ -25,8 +25,8 @@ namespace AppointmentSystem.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    StartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    StartTime = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    EndTime = table.Column<TimeSpan>(type: "interval", nullable: false),
                     AddedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LastUpdatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -47,7 +47,7 @@ namespace AppointmentSystem.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-          
+
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_OfficerId",
@@ -59,7 +59,9 @@ namespace AppointmentSystem.Migrations
                 table: "Appointments",
                 column: "VisitorId");
 
-           
+         
+
+         
         }
 
         /// <inheritdoc />

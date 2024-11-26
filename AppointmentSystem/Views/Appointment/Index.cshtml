@@ -1,4 +1,5 @@
-﻿@model IEnumerable<AppointmentSystem.Models.ViewModel.AppointmentViewmodel>
+﻿@using static AppointmentSystem.Models.Domain.Appointment
+@model IEnumerable<AppointmentSystem.Models.ViewModel.AllAppointmentViewmodel>
 
 @{
     ViewData["Title"] = "Appointments";
@@ -11,10 +12,10 @@
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>#</th>
+
             <th>Name</th>
-            @* <th>Officer</th> *@
-            @* <th>Visitor</th> *@
+             <th>Officer</th> 
+            <th>Visitor</th> 
             <th>Date</th>
             <th>Start Time</th>
             <th>End Time</th>
@@ -25,21 +26,26 @@
     <tbody>
         @if (Model != null && Model.Any())
         {
-            int counter = 1;
             foreach (var appointment in Model)
             {
                 <tr>
-                    <td>@counter++</td>
                     <td>@appointment.Name</td>
-                    @* <td>@appointment.OfficerName</td> *@
-                    @* <td>@appointment.VisitorName</td> *@
+                    <td>@appointment.OfficerName</td>
+                    <td>@appointment.VisitorName</td>
                     <td>@appointment.Date.ToShortDateString()</td>
-                    <td>@appointment.StartTime.ToShortTimeString()</td>
-                    <td>@appointment.EndTime.ToShortTimeString()</td>
+                    <td>@appointment.StartTime</td>
+                    <td>@appointment.EndTime</td>
                     <td>@appointment.Status</td>
                     <td>
-                        <a href="@Url.Action("Edit", "Appointment", new { id = appointment.Id })" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="@Url.Action("Cancel", "Appointment", new { id = appointment.Id })" class="btn btn-sm btn-danger">Cancel</a>
+                        @if (appointment.Status != AppointmentStatus.Cancelled)
+                        {
+                            <a href="@Url.Action("Edit", "Appointment", new { id = appointment.Id })" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="@Url.Action("Cancel", "Appointment", new { id = appointment.Id })" class="btn btn-sm btn-danger">Cancel</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Cancelled</span>
+                        }
                     </td>
                 </tr>
             }
@@ -47,7 +53,7 @@
         else
         {
             <tr>
-                <td colspan="9" class="text-center">No appointments found.</td>
+                <td colspan="8" class="text-center">No appointments found.</td>
             </tr>
         }
     </tbody>

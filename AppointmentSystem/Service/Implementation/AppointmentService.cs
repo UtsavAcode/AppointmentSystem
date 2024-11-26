@@ -16,41 +16,61 @@ namespace AppointmentSystem.Service.Implementation
         }
         public async Task CancelAsync(int id)
         {
-            await _repo.CancelAsync(id);
+            var appointment = await _repo.GetAsync(id);
+
+            if (appointment != null)
+            {
+                // Mark the appointment as cancelled
+                appointment.Status = AppointmentStatus.Cancelled;
+                appointment.LastUpdatedOn = DateTime.UtcNow;
+
+                // Update the appointment in the repository
+                await _repo.UpdateAsync(appointment);
+            }
         }
 
-        public async Task CreateAsync(AppointmentViewmodel model)
-        {
+
+     
+
+            public async Task CreateAsync(AppointmentViewmodel model)
+            {
+                // Check if the visitor already has an appointment for the given date
+                var hasExistingAppointment = await _repo.HasExistingAppointment(model.VisitorId, model.Date);
+                if (hasExistingAppointment)
+                {
+                    throw new InvalidOperationException(
+                        $"Visitor already has an appointment scheduled for {model.Date.ToShortDateString()}. " +
+                        "Only one appointment per day is allowed.");
+                }
+
+            // Convert Date to UTC
+            var utcDate = model.Date.ToUniversalTime();
+
+            // Create a new Appointment entity
             var appointment = new Appointment
             {
-                Name = model.Name,
                 OfficerId = model.OfficerId,
                 VisitorId = model.VisitorId,
-                Status = model.Status,
-                Date = model.Date.ToUniversalTime(),  // Convert to UTC
-                StartTime = model.StartTime.ToUniversalTime(),  // Convert to UTC
-                EndTime = model.EndTime.ToUniversalTime(),  // Convert to UTC
-                AddedOn = DateTime.UtcNow,  // Use UTC time
-                LastUpdatedOn = DateTime.UtcNow,  //
+                Name = model.Name,
+                Date = utcDate,
+                StartTime = model.StartTime,
+                EndTime = model.EndTime,
+                AddedOn = DateTime.UtcNow,
+                LastUpdatedOn = DateTime.UtcNow
             };
+
+           
 
             await _repo.AddAsync(appointment);
         }
+        
 
-        public async Task<List<AppointmentViewmodel>> GetAllAsync()
+
+
+        public async Task<List<AllAppointmentViewmodel>> GetAllAsync()
         {
            var appointment = await _repo.GetAllAsync();
-            return appointment.Select(a=> new AppointmentViewmodel {
-
-                Id = a.Id,
-                OfficerId = a.OfficerId,
-                VisitorId = a.VisitorId,
-                Name = a.Name,
-                Date = a.Date,
-                StartTime = a.StartTime,
-                EndTime = a.EndTime,
-                Status = a.Status
-            }).ToList();
+            return appointment;
         }
         
 
@@ -66,27 +86,43 @@ namespace AppointmentSystem.Service.Implementation
                 VisitorId = appointment.VisitorId,
                 Name = appointment.Name,
                 Date = appointment.Date,
-                StartTime = appointment.StartTime.Date.ToUniversalTime(),
-                EndTime = appointment.EndTime.ToUniversalTime(),
+                StartTime = appointment.StartTime,
+                EndTime = appointment.EndTime,
                 Status = appointment.Status,
                 AddedOn = DateTime.UtcNow,
             };
         }
 
-        public async Task UpdateAsync(AppointmentViewmodel model)
+        public async Task UpdateAsync(EditAppointment model)
         {
-            var appointment = await _repo.GetAsync(model.Id);
-            if (appointment == null) return;
+            // Check for existing appointments on the same date
+            var hasExistingAppointment = await _repo.HasExistingAppointmentDate(model.Date);
+            if (hasExistingAppointment)
+            {
+                throw new InvalidOperationException(
+                    $"Visitor already has an appointment scheduled for {model.Date.ToShortDateString()}. Only one appointment per day is allowed.");
+            }
 
+            // Retrieve the appointment to update
+            var appointment = await _repo.GetAsync(model.Id);
+            if (appointment == null)
+            {
+                throw new KeyNotFoundException("Appointment not found for the given ID.");
+            }
+
+            // Update properties, converting StartTime and EndTime to UTC
             appointment.OfficerId = model.OfficerId;
             appointment.VisitorId = model.VisitorId;
             appointment.Name = model.Name;
-            appointment.Date = model.Date;
+            appointment.Date = DateTime.SpecifyKind(model.Date, DateTimeKind.Utc);
             appointment.StartTime = model.StartTime;
             appointment.EndTime = model.EndTime;
             appointment.LastUpdatedOn = DateTime.UtcNow;
 
+            // Attempt to save changes
             await _repo.UpdateAsync(appointment);
         }
+
+
     }
 }
