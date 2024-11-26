@@ -30,18 +30,25 @@ namespace AppointmentSystem.Service.Implementation
         }
 
 
-     
 
-            public async Task CreateAsync(AppointmentViewmodel model)
+
+        public async Task CreateAsync(AppointmentViewmodel model)
+        {
+
+            if (model.Date < DateTime.UtcNow.Date)
             {
-                // Check if the visitor already has an appointment for the given date
-                var hasExistingAppointment = await _repo.HasExistingAppointment(model.VisitorId, model.Date);
-                if (hasExistingAppointment)
-                {
-                    throw new InvalidOperationException(
-                        $"Visitor already has an appointment scheduled for {model.Date.ToShortDateString()}. " +
-                        "Only one appointment per day is allowed.");
-                }
+                throw new InvalidOperationException(
+                    $"The appointment date cannot be in the past. Provided date: {model.Date.ToShortDateString()}.");
+            }
+
+            // Check if the visitor already has an appointment for the given date
+            var hasExistingAppointment = await _repo.HasExistingAppointment(model.VisitorId, model.Date);
+            if (hasExistingAppointment)
+            {
+                throw new InvalidOperationException(
+                    $"Visitor already has an appointment scheduled for {model.Date.ToShortDateString()}. " +
+                    "Only one appointment per day is allowed.");
+            }
 
             // Convert Date to UTC
             var utcDate = model.Date.ToUniversalTime();
@@ -59,20 +66,20 @@ namespace AppointmentSystem.Service.Implementation
                 LastUpdatedOn = DateTime.UtcNow
             };
 
-           
+
 
             await _repo.AddAsync(appointment);
         }
-        
+
 
 
 
         public async Task<List<AllAppointmentViewmodel>> GetAllAsync()
         {
-           var appointment = await _repo.GetAllAsync();
+            var appointment = await _repo.GetAllAsync();
             return appointment;
         }
-        
+
 
         public async Task<AppointmentViewmodel> GetAsync(int id)
         {
@@ -95,6 +102,11 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task UpdateAsync(EditAppointment model)
         {
+            if (model.Date < DateTime.UtcNow.Date)
+            {
+                throw new InvalidOperationException(
+                    $"The appointment date cannot be in the past. Provided date: {model.Date.ToShortDateString()}.");
+            }
             // Check for existing appointments on the same date
             var hasExistingAppointment = await _repo.HasExistingAppointmentDate(model.Date);
             if (hasExistingAppointment)

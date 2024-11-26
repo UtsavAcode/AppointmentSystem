@@ -7,15 +7,35 @@
 
 <h1>Appointments</h1>
 
+<!-- Filter Form -->
+<form method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-3">
+            <input type="text" name="officerName" class="form-control" placeholder="Search by Officer" value="@ViewData["OfficerName"]" />
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="date" class="form-control" value="@ViewData["Date"]" />
+        </div>
+        <div class="col-md-2">
+            <input type="time" name="startTime" class="form-control" value="@ViewData["StartTime"]" />
+        </div>
+        <div class="col-md-2">
+            <input type="time" name="endTime" class="form-control" value="@ViewData["EndTime"]" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </div>
+</form>
+
 <a href="@Url.Action("Create", "Appointment")" class="btn btn-primary mb-3">Add Appointment</a>
 
 <table class="table table-bordered">
     <thead>
         <tr>
-
             <th>Name</th>
-             <th>Officer</th> 
-            <th>Visitor</th> 
+            <th>Officer</th>
+            <th>Visitor</th>
             <th>Date</th>
             <th>Start Time</th>
             <th>End Time</th>

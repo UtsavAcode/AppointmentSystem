@@ -21,10 +21,47 @@ namespace AppointmentSystem.Controllers
             _visitorService = visitorService;
             _logger = logger; 
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string officerName, DateTime? date, TimeSpan? startTime, TimeSpan? endTime)
         {
-           var appointment =  await _service.GetAllAsync();
-            return View(appointment);
+            // Get all appointments
+            var appointments = await _service.GetAllAsync();
+
+            // Apply filters if provided
+            if (!string.IsNullOrEmpty(officerName))
+            {
+                appointments = appointments.Where(a => a.OfficerName.Contains(officerName, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (date.HasValue)
+            {
+                appointments = appointments.Where(a => a.Date.Date == date.Value.Date).ToList();
+            }
+
+            if (startTime.HasValue)
+            {
+                appointments = appointments.Where(a => a.StartTime >= startTime.Value).ToList();
+            }
+
+            if (endTime.HasValue)
+            {
+                appointments = appointments.Where(a => a.EndTime <= endTime.Value).ToList();
+            }
+
+            // Sort: Active appointments first, then Cancelled ones
+            appointments = appointments
+                .OrderBy(a => a.Status == AppointmentStatus.Cancelled) // False (Active) comes first
+                .ThenBy(a => a.Date) // Sort by Date as secondary criterion
+                .ThenBy(a => a.StartTime) // Sort by Start Time
+                .ToList();
+
+            // Pass filter values to the view using ViewData
+            ViewData["OfficerName"] = officerName;
+            ViewData["Date"] = date;
+            ViewData["StartTime"] = startTime;
+            ViewData["EndTime"] = endTime;
+
+            // Return the filtered and sorted list
+            return View(appointments);
         }
 
         [HttpGet]
