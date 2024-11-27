@@ -11,5 +11,6 @@ namespace AppointmentSystem.Repository.Interface
         Task UpdateVisitorAsync(Visitor visitor);
         Task DeleteVisitorAsync(int id);
         Task<IEnumerable<Visitor>> GetActiveVisitorsAsync();
+        Task<bool> IsVisitorActiveAsync(int visitorId);
     }
 }

@@ -10,6 +10,8 @@ namespace AppointmentSystem.Repository.Interface
         Task<bool>InsertOfficerAsync(Officer officer);
         Task<bool> UpdateOfficerAsync(Officer officer);
         Task<IEnumerable<Officer>> GetActiveOfficersByPostIdAsync(int postId);
-     
+        Task<bool> IsOfficerActiveAsync(int officerId);
+
+
     }
 }

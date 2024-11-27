@@ -1,19 +1,23 @@
 ﻿using AppointmentSystem.Models.Domain;
 using AppointmentSystem.Models.ViewModel;
+using AppointmentSystem.Repository.Implementation;
 using AppointmentSystem.Repository.Interface;
 using AppointmentSystem.Service.Interface;
+using static AppointmentSystem.Models.Domain.Appointment;
 
 namespace AppointmentSystem.Service.Implementation
 {
     public class VisitorService : IVisitorService
     {
         private readonly IVisitorRepository _visitorRepository;
+        private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IOfficerRepository _officerRepo;
 
-
-        public VisitorService(IVisitorRepository visitorRepository)
+        public VisitorService(IVisitorRepository visitorRepository, IAppointmentRepository appointmentRepository,IOfficerRepository officerRepo)
         {
             _visitorRepository = visitorRepository;
-
+            _appointmentRepository = appointmentRepository;
+            _officerRepo = officerRepo;
         }
 
         public async Task<VisitorViewModel> GetVisitorByIdAsync(int id)
@@ -74,8 +78,42 @@ namespace AppointmentSystem.Service.Implementation
                 existingVisitor.MobileNumber = visitorViewModel.MobileNumber;
                 existingVisitor.EmailAddress = visitorViewModel.EmailAddress;
                 existingVisitor.Status = visitorViewModel.Status;
-               
+
+                
                 await _visitorRepository.UpdateVisitorAsync(existingVisitor);
+            }
+        }
+
+        public async Task DeactivateFutureAppointmentsAsync(int visitorId)
+        {
+            var futureAppointments = await _appointmentRepository.GetFutureAppointmentsByVisitorIdAsync(visitorId);
+            foreach (var appointment in futureAppointments)
+            {
+                if (appointment.Status == AppointmentStatus.Active)  
+                {
+                    appointment.Status = AppointmentStatus.Deactivated;
+                    appointment.LastUpdatedOn = DateTime.UtcNow;
+                    await _appointmentRepository.UpdateAsync(appointment);
+                }
+            }
+        }
+
+        public async Task ReactivateFutureAppointmentsAsync(int visitorId)
+        {
+            var futureAppointments = await _appointmentRepository.GetFutureAppointmentsByVisitorIdAsync(visitorId);
+            foreach (var appointment in futureAppointments)
+            {
+                // Only process deactivated appointments
+                if (appointment.Status == AppointmentStatus.Deactivated)
+                {
+                    var officerIsActive = await _officerRepo.IsOfficerActiveAsync(appointment.OfficerId);
+                    if (officerIsActive)
+                    {
+                        appointment.Status = AppointmentStatus.Active;
+                        appointment.LastUpdatedOn = DateTime.UtcNow;
+                        await _appointmentRepository.UpdateAsync(appointment);
+                    }
+                }
             }
         }
 

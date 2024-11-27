@@ -97,6 +97,13 @@ namespace AppointmentSystem.Repository.Implementation
                 .ToListAsync();
         }
 
-       
+
+        public async Task<bool> IsOfficerActiveAsync(int officerId)
+        {
+            var officer = await _context.Officers.FirstOrDefaultAsync(o => o.Id == officerId);
+            return officer != null && officer.Status == true; // Corrected comparison operator
+        }
+
+
     }
 }

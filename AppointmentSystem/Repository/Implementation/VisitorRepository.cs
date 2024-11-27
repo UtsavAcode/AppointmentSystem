@@ -58,5 +58,11 @@ namespace AppointmentSystem.Repository.Implementation
                 .ToListAsync();
         }
 
+        public async Task<bool> IsVisitorActiveAsync(int visitorId)
+        {
+            var visitor = await _context.Visitors.FirstOrDefaultAsync(o => o.Id == visitorId);
+            return visitor != null && visitor.Status == true; // Corrected comparison operator
+        }
+
     }
 }

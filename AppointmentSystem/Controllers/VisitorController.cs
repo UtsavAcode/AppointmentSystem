@@ -58,12 +58,13 @@ public class VisitorController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit( VisitorViewModel model)
+    public async Task<IActionResult> Edit(VisitorViewModel model)
     {
         if (!ModelState.IsValid)
         {
             return View(model);
         }
+
         try
         {
             var existingVisitor = await _visitorService.GetVisitorByIdAsync(model.Id);
@@ -71,14 +72,16 @@ public class VisitorController : Controller
             {
                 return NotFound();
             }
-            
+
+            // Update visitor properties
             existingVisitor.Name = model.Name;
             existingVisitor.MobileNumber = model.MobileNumber;
             existingVisitor.EmailAddress = model.EmailAddress;
-          
+            existingVisitor.Status = model.Status; 
 
             await _visitorService.UpdateVisitorAsync(existingVisitor);
-        
+
+            TempData["SuccessMessage"] = "Visitor updated successfully.";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
@@ -89,11 +92,7 @@ public class VisitorController : Controller
     }
 
 
-    private async Task<bool> VisitorExists(int id)
-    {
-        var visitor = await _visitorService.GetVisitorByIdAsync(id);
-        return visitor != null;
-    }
+
 
 
     [HttpPost]
@@ -104,20 +103,41 @@ public class VisitorController : Controller
             var visitor = await _visitorService.GetVisitorByIdAsync(id);
             if (visitor == null)
             {
-                return NotFound(); 
+                return NotFound(new { message = "Visitor not found" });
             }
 
+            // Update the status including related appointments
             visitor.Status = status;
-            await _visitorService.UpdateVisitorAsync(visitor); 
-            return Ok(); 
+            await _visitorService.UpdateVisitorAsync(visitor);
+
+
+            if (!status)
+            {
+                await _visitorService.DeactivateFutureAppointmentsAsync(id);  // Call the method to deactivate future appointments
+            }
+            else
+            {
+                await _visitorService.ReactivateFutureAppointmentsAsync(id);  // Reactivate future appointments
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Visitor status has been {(status ? "activated" : "deactivated")} successfully",
+                status = status
+            });
         }
         catch (Exception ex)
         {
             
-            return StatusCode(500, "An error occurred while updating the status. " + ex.Message);
+            return StatusCode(500, new
+            {
+                success = false,
+                message = "An error occurred while updating the status.",
+                error = ex.Message
+            });
         }
     }
-
 
 
 

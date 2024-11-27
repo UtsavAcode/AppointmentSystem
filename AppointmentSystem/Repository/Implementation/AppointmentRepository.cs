@@ -86,5 +86,19 @@ namespace AppointmentSystem.Repository.Implementation
             _context.Appointments.Update(model); // Update the tracked entity
             await _context.SaveChangesAsync();  // Persist changes to the database
         }
+
+       
+
+
+        public async Task<IEnumerable<Appointment>> GetFutureAppointmentsByVisitorIdAsync(int visitorId)
+        {
+            return await _context.Appointments
+                .Where(a => a.VisitorId == visitorId &&
+                           a.Date.Date >= DateTime.UtcNow.Date &&
+                           (a.Status == AppointmentStatus.Active ||
+                            a.Status == AppointmentStatus.Deactivated))
+                .ToListAsync();
+        }
+
     }
 }

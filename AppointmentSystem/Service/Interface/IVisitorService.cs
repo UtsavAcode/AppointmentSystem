@@ -10,7 +10,8 @@ namespace AppointmentSystem.Service.Interface
         Task CreateVisitorAsync(VisitorViewModel visitorViewModel);
         Task UpdateVisitorAsync(VisitorViewModel visitorViewModel);
         Task<IEnumerable<VisitorViewModel>> GetActiveVisitorsAsync();
-
+        Task DeactivateFutureAppointmentsAsync(int visitorId);
+        Task ReactivateFutureAppointmentsAsync(int visitorId);
 
     }
 }
