@@ -16,7 +16,7 @@ namespace AppointmentSystem.Service.Implementation
             _activityRepository = activityRepository;
         }
 
-        // Create Leave or Break Activity
+    
         public async Task CreateActivityAsync(ActivityViewModel model)
         {
             await _activityRepository.CreateActivityAsync(model);
@@ -37,7 +37,7 @@ namespace AppointmentSystem.Service.Implementation
         {
             try
             {
-                // Call the repository method to get the activity
+              
                 var activity = await _activityRepository.GetActivityByIdAsync(activityId);
 
                 if (activity == null)
@@ -47,12 +47,12 @@ namespace AppointmentSystem.Service.Implementation
             }
             catch (KeyNotFoundException ex)
             {
-                // Handle specific error (e.g., log if needed)
+                
                 throw new Exception($"Error retrieving activity: {ex.Message}");
             }
             catch (Exception ex)
             {
-                // General error handling
+                
                 throw new Exception($"An unexpected error occurred: {ex.Message}");
             }
         }
@@ -60,11 +60,8 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task UpdateActivityAsync(int activityId, ActivityViewModel model)
         {
-            // Perform validation or additional business logic if needed
 
-            // Call the repository method to update the activity
             await _activityRepository.UpdateActivityAsync(activityId, model);
         }
     }
 }
-

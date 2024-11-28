@@ -3,6 +3,7 @@ using AppointmentSystem.Models.ViewModel;
 using AppointmentSystem.Repository.Implementation;
 using AppointmentSystem.Repository.Interface;
 using AppointmentSystem.Service.Interface;
+using Microsoft.AspNetCore.Mvc;
 using static AppointmentSystem.Models.Domain.Appointment;
 
 namespace AppointmentSystem.Service.Implementation
@@ -23,11 +24,11 @@ namespace AppointmentSystem.Service.Implementation
 
             if (appointment != null)
             {
-                // Mark the appointment as cancelled
+                
                 appointment.Status = AppointmentStatus.Cancelled;
                 appointment.LastUpdatedOn = DateTime.UtcNow;
 
-                // Update the appointment in the repository
+               
                 await _repo.UpdateAsync(appointment);
             }
         }
@@ -42,7 +43,7 @@ namespace AppointmentSystem.Service.Implementation
                     $"The appointment date cannot be in the past. Provided date: {model.Date.ToShortDateString()}.");
             }
 
-            // Check if the visitor already has an appointment for the given date
+           
             var hasExistingAppointment = await _repo.HasExistingAppointment(model.VisitorId, model.Date);
             if (hasExistingAppointment)
             {
@@ -51,17 +52,17 @@ namespace AppointmentSystem.Service.Implementation
                     "Only one appointment per day is allowed.");
             }
 
-            // Check if the officer is available during the selected time
+         
             var isOfficerAvailable = await IsOfficerAvailableAsync(model.OfficerId, DateOnly.FromDateTime(model.Date), model.StartTime, model.EndTime);
             if (!isOfficerAvailable)
             {
                 throw new InvalidOperationException("The officer is unavailable during the selected time.");
             }
 
-            // Convert Date to UTC
+    
             var utcDate = model.Date.ToUniversalTime();
 
-            // Create a new Appointment entity
+          
             var appointment = new Appointment
             {
                 OfficerId = model.OfficerId,
@@ -76,13 +77,13 @@ namespace AppointmentSystem.Service.Implementation
 
             await _repo.AddAsync(appointment);
 
-            // Log the appointment activity (Convert TimeSpan to TimeOnly)
+        
             await _activityRepo.CreateAppointmentActivityAsync(
                 model.OfficerId,
-                DateOnly.FromDateTime(model.Date), // Convert DateTime to DateOnly
-                TimeOnly.FromTimeSpan(model.StartTime), // Convert TimeSpan to TimeOnly
-                DateOnly.FromDateTime(model.Date), // Convert DateTime to DateOnly
-                TimeOnly.FromTimeSpan(model.EndTime) // Convert TimeSpan to TimeOnly
+                DateOnly.FromDateTime(model.Date), 
+                TimeOnly.FromTimeSpan(model.StartTime),
+                DateOnly.FromDateTime(model.Date), 
+                TimeOnly.FromTimeSpan(model.EndTime) 
             );
         }
 
@@ -94,7 +95,7 @@ namespace AppointmentSystem.Service.Implementation
                     $"The appointment date cannot be in the past. Provided date: {model.Date.ToShortDateString()}.");
             }
 
-            // Check for existing appointments on the same date
+       
             var hasExistingAppointment = await _repo.HasExistingAppointmentDate(model.Date);
             if (hasExistingAppointment)
             {
@@ -102,21 +103,21 @@ namespace AppointmentSystem.Service.Implementation
                     $"Visitor already has an appointment scheduled for {model.Date.ToShortDateString()}. Only one appointment per day is allowed.");
             }
 
-            // Check if the officer is available during the selected time
+           
             var isOfficerAvailable = await IsOfficerAvailableAsync(model.OfficerId, DateOnly.FromDateTime(model.Date), model.StartTime, model.EndTime);
             if (!isOfficerAvailable)
             {
                 throw new InvalidOperationException("The officer is unavailable during the selected time.");
             }
 
-            // Retrieve the appointment to update
+         
             var appointment = await _repo.GetAsync(model.Id);
             if (appointment == null)
             {
                 throw new KeyNotFoundException("Appointment not found for the given ID.");
             }
 
-            // Update properties, converting StartTime and EndTime to UTC
+         
             appointment.OfficerId = model.OfficerId;
             appointment.VisitorId = model.VisitorId;
             appointment.Name = model.Name;
@@ -125,7 +126,6 @@ namespace AppointmentSystem.Service.Implementation
             appointment.EndTime = model.EndTime;
             appointment.LastUpdatedOn = DateTime.UtcNow;
 
-            // Attempt to save changes
             await _repo.UpdateAsync(appointment);
         }
 
@@ -177,6 +177,27 @@ namespace AppointmentSystem.Service.Implementation
 
             return true;
         }
+
+
+        public async Task<List<AllAppointmentViewmodel>> GetAppointmentsByOfficerIdAsync(int officerId)
+        {
+            
+            var appointments = await _repo.GetAppointmentsByOfficerIdAsync(officerId);
+
+            return appointments;
+        }
+
+
+
+
+
+
+        public async Task<List<AllAppointmentViewmodel>> GetAppointmentsByVisitorIdAsync(int visitorId)
+        {
+            var appointments = await _repo.GetAppointmentsByVisitorIdAsync(visitorId);
+            return appointments;
+        }
+
     }
 }
 

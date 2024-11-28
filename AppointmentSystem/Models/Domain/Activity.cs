@@ -12,7 +12,8 @@ public enum ActivityStatus
 {
     Active,
     Deactivated,
-    Cancelled
+    Cancelled,
+    Completed,
 }
 
 public class Activity

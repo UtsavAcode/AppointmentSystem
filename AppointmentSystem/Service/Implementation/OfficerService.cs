@@ -49,15 +49,15 @@ namespace AppointmentSystem.Service.Implementation
                 existingUser.Name = model.Name;
                 existingUser.PostId = model.PostId;
 
-                // Parse WorkStartTime and WorkEndTime strings into TimeOnly
+               
                 if (TimeOnly.TryParse(model.WorkStartTime, out var parsedWorkStartTime) &&
                     TimeOnly.TryParse(model.WorkEndTime, out var parsedWorkEndTime))
                 {
-                    // Convert TimeOnly back to string before assigning
+                    
                     existingUser.WorkStartTime = parsedWorkStartTime.ToString("HH:mm");
                     existingUser.WorkEndTime = parsedWorkEndTime.ToString("HH:mm");
 
-                    // Cancel invalid activities
+                  
                     await CancelInvalidActivities(existingUser.Id, parsedWorkStartTime, parsedWorkEndTime);
                 }
                 else
@@ -73,25 +73,25 @@ namespace AppointmentSystem.Service.Implementation
 
         private async Task CancelInvalidActivities(int officerId, TimeOnly workStartTime, TimeOnly workEndTime)
         {
-            // Retrieve all future activities for the officer
+            
             var futureActivities = await _activityRepository.GetFutureActivityByIdAsync(officerId);
 
             foreach (var activity in futureActivities)
             {
-                // Skip past activities
+                
                 if (activity.StartDate < DateOnly.FromDateTime(DateTime.UtcNow) ||
                     (activity.StartDate == DateOnly.FromDateTime(DateTime.UtcNow) && activity.StartTime < TimeOnly.FromDateTime(DateTime.UtcNow)))
                 {
                     continue;
                 }
 
-                // Check if the activity falls outside the officer's new work schedule
+                
                 if (activity.StartTime < workStartTime || activity.EndTime > workEndTime)
                 {
-                    // Update activity status to Cancelled
+                    
                     activity.Status = ActivityStatus.Cancelled;
 
-                    // Update the activity in the database
+                    
                     await _activityRepository.UpdateActivityAsync(activity.ActivityId, new ActivityViewModel
                     {
                         ActivityId = activity.ActivityId,
@@ -111,28 +111,28 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task<bool> ToggleOfficerStatusAsync(int id, bool status)
         {
-            // Retrieve the officer by ID
+            
             var officer = await _officerRepository.GetOfficerByIdAsync(id);
             if (officer == null)
                 return false;
 
-            if (status) // If trying to activate
+            if (status) 
             {
-                // Ensure the post associated with the officer is active
+           
                 var post = await _postRepository.GetByIdAsync(officer.PostId);
                 if (!post.Status)
-                    return false; // Cannot activate if post is inactive
+                    return false;  
 
-                // Reactivate related future activities that were deactivated
+                
                 await ReactivateActivities(officer.Id);
             }
-            else // Deactivating officer
+            else  
             {
-                // Deactivate related future active activities
+                 
                 await DeactivateActivities(officer.Id);
             }
 
-            // Update the officer's status
+           
             officer.Status = status;
             return await _officerRepository.UpdateOfficerAsync(officer);
         }
@@ -140,23 +140,23 @@ namespace AppointmentSystem.Service.Implementation
 
         private async Task ReactivateActivities(int officerId)
         {
-            // Retrieve all future activities for the officer
+             
             var futureActivities = await _activityRepository.GetFutureActivityByIdAsync(officerId);
 
             foreach (var activity in futureActivities)
             {
-                // Check if the activity is currently deactivated
+                 
                 if (activity.Status == ActivityStatus.Deactivated)
                 {
-                    // Check if the visitor associated with the activity is active
+                    
                     var isVisitorActive = await _visitorRepository.IsVisitorActiveAsync(activity.ActivityId);
 
-                    if (isVisitorActive) // Ensure the visitor status allows reactivation
+                    if (isVisitorActive)  
                     {
-                        // Set the activity status to Active
+
                         activity.Status = ActivityStatus.Active;
 
-                        // Update the activity in the database
+
                         await _activityRepository.UpdateActivityAsync(activity.ActivityId, new ActivityViewModel
                         {
                             ActivityId = activity.ActivityId,
@@ -175,18 +175,18 @@ namespace AppointmentSystem.Service.Implementation
 
         private async Task DeactivateActivities(int officerId)
         {
-            // Retrieve all future activities for the specified visitor (officer)
+
             var futureActivities = await _activityRepository.GetFutureActivityByIdAsync(officerId);
 
-            // Loop through the activities and update their status
+
             foreach (var activity in futureActivities)
             {
                 if (activity.Status == ActivityStatus.Active)
                 {
-                    // Set the activity status to Deactivated
+
                     activity.Status = ActivityStatus.Deactivated;
 
-                    // Update the activity in the database
+
                     await _activityRepository.UpdateActivityAsync(activity.ActivityId, new ActivityViewModel
                     {
                         ActivityId = activity.ActivityId,
@@ -248,9 +248,9 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task<IEnumerable<Officer>> GetActiveOfficersAsync()
         {
-            return await _context.Officers.Where(o=>o.Status==true).ToListAsync();
+            return await _context.Officers.Where(o => o.Status == true).ToListAsync();
         }
-       
+
         public async Task CreateOfficerAsync(OfficerViewModel model)
         {
             var officer = new Officer
@@ -273,7 +273,7 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task<bool> IsOfficerAvailableAsync(int officerId, DateOnly date, TimeOnly startTime, TimeOnly endTime)
         {
-            // Retrieve activities for the officer on the specified date
+
             var activities = await _context.Activities
                 .Where(a => a.OfficerId == officerId &&
                             a.StartDate <= date &&
@@ -282,21 +282,21 @@ namespace AppointmentSystem.Service.Implementation
                             (a.Type == ActivityType.Leave || a.Type == ActivityType.Break || a.Type == ActivityType.Appointment))
                 .ToListAsync();
 
-            // Check for time overlaps
+
             foreach (var activity in activities)
             {
                 if ((startTime >= activity.StartTime && startTime < activity.EndTime) ||
                     (endTime > activity.StartTime && endTime <= activity.EndTime) ||
                     (startTime <= activity.StartTime && endTime >= activity.EndTime))
                 {
-                    return false; // Officer is not available
+                    return false;
                 }
             }
 
-            return true; // Officer is available
+            return true;
+
+
+
         }
-
-
-
     }
 }

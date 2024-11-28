@@ -6,7 +6,7 @@ namespace AppointmentSystem.Repository.Interface
     {
         Task CancelActivityAsync(int activityId);
         Task CreateActivityAsync(ActivityViewModel model);
-        Task<IEnumerable<AllActivitiesViewModel>> GetActivitiesForOfficerAsync(int officerId);
+      Task<IEnumerable<AllActivitiesViewModel>> GetActivitiesForOfficerAsync(int officerId);
         Task<ActivityViewModel> GetActivityByIdAsync(int activityId);
         Task CreateAppointmentActivityAsync(int officerId, DateOnly startDate, TimeOnly startTime, DateOnly endDate, TimeOnly endTime);
         Task<IEnumerable<AllActivitiesViewModel>> GetAllActivityAsync();

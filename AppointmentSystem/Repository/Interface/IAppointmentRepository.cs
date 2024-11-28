@@ -15,5 +15,7 @@ namespace AppointmentSystem.Repository.Interface
         Task<bool> HasExistingAppointmentDate(DateTime date);
 
         Task<IEnumerable<Appointment>> GetFutureAppointmentsByVisitorIdAsync(int visitorId);
+        Task<List<AllAppointmentViewmodel>> GetAppointmentsByOfficerIdAsync(int officerId);
+        Task<List<AllAppointmentViewmodel>> GetAppointmentsByVisitorIdAsync(int visitorId);
     }
 }

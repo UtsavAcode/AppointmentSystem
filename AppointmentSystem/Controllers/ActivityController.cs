@@ -22,7 +22,7 @@ namespace AppointmentSystem.Controllers
             return View(activities);
         }
 
-      
+
 
         [HttpGet]
         public async Task<IActionResult> Create()

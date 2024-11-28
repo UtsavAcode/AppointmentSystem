@@ -37,13 +37,13 @@ namespace AppointmentSystem.Repository.Implementation
 
         public async Task CreateActivityAsync(ActivityViewModel model)
         {
-            // Validate activity type
+           
             if (model.Type == ActivityType.Appointment)
             {
                 throw new InvalidOperationException("Appointment activities can only be created via appointment creation.");
             }
 
-            // Validate dates and times
+        
             var startDateTime = model.StartDate.ToDateTime(model.StartTime);
             var endDateTime = model.EndDate.ToDateTime(model.EndTime);
 
@@ -52,7 +52,7 @@ namespace AppointmentSystem.Repository.Implementation
                 throw new InvalidOperationException("End time must be after start time.");
             }
 
-            // Check for existing activities for the officer in the same time period
+    
             var hasOverlap = await _context.Activities
                 .Where(a => a.OfficerId == model.OfficerId &&
                            a.Status == ActivityStatus.Active &&
@@ -64,10 +64,10 @@ namespace AppointmentSystem.Repository.Implementation
                 throw new InvalidOperationException("Officer already has an activity scheduled during this time period.");
             }
 
-            // Create new activity
+            
             var activity = new Activity
             {
-                Type = model.Type,  // Fixed: Using the model's Type instead of ActivityType.Type
+                Type = model.Type,  
                 OfficerId = model.OfficerId,
                 StartDate = model.StartDate,
                 StartTime = model.StartTime,
@@ -87,42 +87,74 @@ namespace AppointmentSystem.Repository.Implementation
                 .Where(a => a.OfficerId == officerId)
                 .ToListAsync();
 
-            return activities.Select(activity => new AllActivitiesViewModel
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+
+            return activities.Select(activity =>
             {
-                ActivityId = activity.ActivityId,
-                Type = activity.Type,
-                OfficerId = activity.OfficerId,
-                OfficerName = activity.Officer.Name,
-                StartDate = activity.StartDate,
-                StartTime = activity.StartTime,
-                EndDate = activity.EndDate,
-                EndTime = activity.EndTime,
-                Status = activity.Status
+                var isInPast = activity.EndDate < today ||
+                              (activity.EndDate == today && activity.EndTime < currentTime);
+
+                var status = activity.Status;
+                if (isInPast)
+                {
+                    status = activity.Status == ActivityStatus.Active
+                        ? ActivityStatus.Completed
+                        : ActivityStatus.Cancelled;
+                }
+
+                return new AllActivitiesViewModel
+                {
+                    ActivityId = activity.ActivityId,
+                    Type = activity.Type,
+                    OfficerId = activity.OfficerId,
+                    OfficerName = activity.Officer.Name,
+                    StartDate = activity.StartDate,
+                    StartTime = activity.StartTime,
+                    EndDate = activity.EndDate,
+                    EndTime = activity.EndTime,
+                    Status = status
+                };
             });
         }
+
         public async Task<IEnumerable<AllActivitiesViewModel>> GetAllActivityAsync()
         {
-            // Fetch all activities including related Officer data
             var activities = await _context.Activities
-                                            .Include(a => a.Officer)  // Ensure the Officer data is included
-                                            .ToListAsync();
+                .Include(a => a.Officer)
+                .ToListAsync();
 
-            // Map the Activities to ActivityViewModels
-            var activityViewModels = activities.Select(activity => new AllActivitiesViewModel
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+
+            return activities.Select(activity =>
             {
-                ActivityId = activity.ActivityId,
-                Type = activity.Type,
-                OfficerId = activity.OfficerId,
-                OfficerName = activity.Officer.Name,  // Assuming 'Officer' has a 'Name' property
-                StartDate = activity.StartDate,
-                StartTime = activity.StartTime,
-                EndDate = activity.EndDate,
-                EndTime = activity.EndTime,
-                Status = activity.Status
-            });
+                var isInPast = activity.EndDate < today ||
+                              (activity.EndDate == today && activity.EndTime < currentTime);
 
-            return activityViewModels;
+                var status = activity.Status;
+                if (isInPast)
+                {
+                    status = activity.Status == ActivityStatus.Active
+                        ? ActivityStatus.Completed
+                        : ActivityStatus.Cancelled;
+                }
+
+                return new AllActivitiesViewModel
+                {
+                    ActivityId = activity.ActivityId,
+                    Type = activity.Type,
+                    OfficerId = activity.OfficerId,
+                    OfficerName = activity.Officer.Name,
+                    StartDate = activity.StartDate,
+                    StartTime = activity.StartTime,
+                    EndDate = activity.EndDate,
+                    EndTime = activity.EndTime,
+                    Status = status
+                };
+            });
         }
+
 
 
         public async Task<ActivityViewModel> GetActivityByIdAsync(int activityId)
@@ -137,9 +169,9 @@ namespace AppointmentSystem.Repository.Implementation
             return new ActivityViewModel
             {
                 ActivityId = activity.ActivityId,
-                Type = activity.Type,  // Fixed: Using Type instead of ActivityType
+                Type = activity.Type,  
                 OfficerId = activity.OfficerId,
-                // OfficerName = activity.Officer.Name,
+            
                 StartDate = activity.StartDate,
                 StartTime = activity.StartTime,
                 EndDate = activity.EndDate,
@@ -167,7 +199,7 @@ namespace AppointmentSystem.Repository.Implementation
 
         public async Task UpdateActivityAsync(int activityId, ActivityViewModel model)
         {
-            // Retrieve the existing activity
+          
             var activity = await _context.Activities.FirstOrDefaultAsync(a => a.ActivityId == activityId);
 
             if (activity == null)
@@ -175,7 +207,6 @@ namespace AppointmentSystem.Repository.Implementation
                 throw new KeyNotFoundException("Activity not found.");
             }
 
-            // Validate new dates and times
             var startDateTime = model.StartDate.ToDateTime(model.StartTime);
             var endDateTime = model.EndDate.ToDateTime(model.EndTime);
 
@@ -184,7 +215,7 @@ namespace AppointmentSystem.Repository.Implementation
                 throw new InvalidOperationException("End time must be after start time.");
             }
 
-            // Check for overlapping activities for the officer, excluding the current activity
+      
             var hasOverlap = await _context.Activities
                 .Where(a => a.OfficerId == model.OfficerId &&
                             a.ActivityId != activityId &&
@@ -197,16 +228,14 @@ namespace AppointmentSystem.Repository.Implementation
                 throw new InvalidOperationException("Officer already has another activity scheduled during this time period.");
             }
 
-            // Update activity properties
+ 
             activity.Type = model.Type;
             activity.OfficerId = model.OfficerId;
             activity.StartDate = model.StartDate;
             activity.StartTime = model.StartTime;
             activity.EndDate = model.EndDate;
             activity.EndTime = model.EndTime;
-            //  activity.Status = model.Status;
-
-            // Save changes to the database
+           
             await _context.SaveChangesAsync();
         }
 

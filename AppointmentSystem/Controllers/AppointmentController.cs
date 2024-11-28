@@ -254,7 +254,41 @@ namespace AppointmentSystem.Controllers
         }
 
 
+        [HttpGet("api/Appointment/GetVisitorAppointments/{visitorId}")]
+        public async Task<IActionResult> GetVisitorAppointments(int visitorId)
+        {
+            try
+            {
+                var appointments = await _service.GetAppointmentsByVisitorIdAsync(visitorId);
+                return Ok(appointments); // Return the appointments as a successful response
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error fetching visitor {visitorId} appointments");
+                return StatusCode(500, "An error occurred while fetching appointments.");
+            }
+        }
 
+        [HttpGet("api/Appointment/GetOfficerAppointments/{officerId}")]
+        public async Task<IActionResult> GetOfficerAppointments(int officerId)
+        {
+            try
+            {
+                // Call the service method to fetch appointments by officer ID
+                var appointments = await _service.GetAppointmentsByOfficerIdAsync(officerId);
+
+                // Return the appointments as a successful response
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details
+                _logger.LogError(ex, $"Error fetching officer {officerId} appointments");
+
+                // Return a 500 Internal Server Error with a message
+                return StatusCode(500, "An error occurred while fetching appointments.");
+            }
+        }
 
     }
 }

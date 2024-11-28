@@ -6,13 +6,93 @@
 }
 
 <div class="container mt-4">
-    <h2 class="mb-3">@ViewData["Title"]</h2>
+    <!-- Filter Section -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Filters</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Activity Type</label>
+                    <select class="form-select" id="typeFilter">
+                        <option value="">All Types</option>
+                        @{
+                            if (Model != null)
+                            {
+                                HashSet<string> uniqueTypes = new HashSet<string>();
+                                foreach (var activity in Model)
+                                {
+                                    uniqueTypes.Add(activity.Type.ToString());
+                                }
+                                foreach (var type in uniqueTypes)
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Officer</label>
+                    <select class="form-select" id="officerFilter">
+                        <option value="">All Officers</option>
+                        @{
+                            if (Model != null)
+                            {
+                                HashSet<string> uniqueOfficers = new HashSet<string>();
+                                foreach (var activity in Model)
+                                {
+                                    if (!string.IsNullOrEmpty(activity.OfficerName))
+                                    {
+                                        uniqueOfficers.Add(activity.OfficerName);
+                                    }
+                                }
+                                foreach (var officer in uniqueOfficers)
+                                {
+                                    <option value="@officer">@officer</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date Range Start</label>
+                    <input type="date" class="form-control" id="startDateFilter">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date Range End</label>
+                    <input type="date" class="form-control" id="endDateFilter">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Time Range Start</label>
+                    <input type="time" class="form-control" id="startTimeFilter">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Time Range End</label>
+                    <input type="time" class="form-control" id="endTimeFilter">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary me-2" onclick="applyFilters()">Apply Filters</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <a href="/Activity/Create" class="btn btn-primary mb-3">Add New Activity</a>
 
     @if (Model != null && Model.Any())
     {
         <div class="table-responsive">
-            <table class="table table-striped table-bordered align-middle">
+            <table class="table table-striped table-bordered align-middle" id="activitiesTable">
                 <thead class="table-dark">
                     <tr>
                         <th scope="col">Activity ID</th>
@@ -29,32 +109,43 @@
                 <tbody>
                     @foreach (var activity in Model)
                     {
-                        <tr>
+                        <tr class="activity-row">
                             <td>@activity.ActivityId</td>
-                            <td>@activity.Type</td>
+                            <td>@activity.Type.ToString()</td>
                             <td>@activity.OfficerName</td>
                             <td>@activity.StartDate.ToString("yyyy-MM-dd")</td>
                             <td>@activity.StartTime.ToString("HH:mm")</td>
                             <td>@activity.EndDate.ToString("yyyy-MM-dd")</td>
                             <td>@activity.EndTime.ToString("HH:mm")</td>
                             <td>
-                                <span class="badge @(activity.Status == ActivityStatus.Cancelled ? "bg-danger" : "bg-success")">
+                                @{
+                                    var badgeClass = activity.Status switch
+                                    {
+                                        ActivityStatus.Active => "bg-success",
+                                        ActivityStatus.Completed => "bg-info",
+                                        ActivityStatus.Cancelled => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass">
                                     @activity.Status
                                 </span>
                             </td>
                             <td>
+                                @{
+                                    var isDisabled = activity.Status == ActivityStatus.Cancelled ||
+                                    activity.Status == ActivityStatus.Completed;
+                                }
                                 <button class="btn btn-sm btn-warning me-2"
                                         onclick="cancelActivity(@activity.ActivityId)"
-                                @(activity.Status == ActivityStatus.Cancelled ? "disabled" : "")>
+                                @(isDisabled ? "disabled" : "")>
                                     Cancel
                                 </button>
-
-                                <a class="btn btn-sm btn-secondary @(activity.Status == ActivityStatus.Cancelled ? "disabled" : "")"
+                                <a class="btn btn-sm btn-secondary @(isDisabled ? "disabled" : "")"
                                    href="/Activity/Edit/@activity.ActivityId"
-                                @(activity.Status == ActivityStatus.Cancelled ? "aria-disabled='true' disabled" : "")>
+                                @(isDisabled ? "aria-disabled='true' disabled" : "")>
                                     Edit
                                 </a>
-
                             </td>
                         </tr>
                     }
@@ -69,6 +160,79 @@
 </div>
 
 <script>
+    function applyFilters() {
+        const type = document.getElementById('typeFilter').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value.toLowerCase();
+        const officer = document.getElementById('officerFilter').value.toLowerCase();
+        const startDate = document.getElementById('startDateFilter').value;
+        const endDate = document.getElementById('endDateFilter').value;
+        const startTime = document.getElementById('startTimeFilter').value;
+        const endTime = document.getElementById('endTimeFilter').value;
+
+        const rows = document.querySelectorAll('.activity-row');
+
+        rows.forEach(row => {
+            const cells = row.getElementsByTagName('td');
+            const rowType = cells[1].textContent.toLowerCase();
+            const rowOfficer = cells[2].textContent.toLowerCase();
+            const rowStartDate = cells[3].textContent;
+            const rowEndDate = cells[5].textContent;
+            const rowStartTime = cells[4].textContent;
+            const rowEndTime = cells[6].textContent;
+            const rowStatus = cells[7].textContent.trim().toLowerCase();
+
+            let show = true;
+
+            // Apply type filter
+            if (type && rowType !== type) {
+                show = false;
+            }
+
+            // Apply status filter
+            if (status && rowStatus !== status) {
+                show = false;
+            }
+
+            // Apply officer filter
+            if (officer && rowOfficer !== officer) {
+                show = false;
+            }
+
+            // Apply date range filter
+            if (startDate && rowStartDate < startDate) {
+                show = false;
+            }
+            if (endDate && rowEndDate > endDate) {
+                show = false;
+            }
+
+            // Apply time range filter
+            if (startTime && rowStartTime < startTime) {
+                show = false;
+            }
+            if (endTime && rowEndTime > endTime) {
+                show = false;
+            }
+
+            row.style.display = show ? '' : 'none';
+        });
+    }
+
+    function resetFilters() {
+        document.getElementById('typeFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('officerFilter').value = '';
+        document.getElementById('startDateFilter').value = '';
+        document.getElementById('endDateFilter').value = '';
+        document.getElementById('startTimeFilter').value = '';
+        document.getElementById('endTimeFilter').value = '';
+
+        const rows = document.querySelectorAll('.activity-row');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+    }
+
     async function cancelActivity(activityId) {
         if (confirm("Are you sure you want to cancel this activity?")) {
             try {

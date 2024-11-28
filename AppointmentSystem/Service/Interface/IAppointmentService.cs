@@ -9,5 +9,8 @@ namespace AppointmentSystem.Service.Interface
         Task <AppointmentViewmodel> GetAsync (int id);
         Task <List<AllAppointmentViewmodel>> GetAllAsync ();
         Task CancelAsync(int id);
+    
+        Task<List<AllAppointmentViewmodel>> GetAppointmentsByOfficerIdAsync(int officerId);
+        Task<List<AllAppointmentViewmodel>> GetAppointmentsByVisitorIdAsync(int visitorId);
     }
 }

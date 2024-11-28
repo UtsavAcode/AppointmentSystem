@@ -49,7 +49,7 @@ namespace AppointmentSystem.Repository.Implementation
                      EndTime = a.EndTime,
                      AddedOn = a.AddedOn,
                      Status = a.Status,
-                     OfficerName = a.Officer.Name, // Assuming Officer has a Name property
+                     OfficerName = a.Officer.Name, 
                      VisitorName = a.Visitor.Name
                  }).ToListAsync();
         }
@@ -67,7 +67,7 @@ namespace AppointmentSystem.Repository.Implementation
 
             return await _context.Appointments
                 .AnyAsync(a => a.VisitorId == visitorId &&
-                              a.Date.Date == dateUtc.Date &&  // Compare both dates in UTC
+                              a.Date.Date == dateUtc.Date &&  
                               a.Status == AppointmentStatus.Active);
         }
 
@@ -77,14 +77,14 @@ namespace AppointmentSystem.Repository.Implementation
 
             return await _context.Appointments
                 .AnyAsync(a => 
-                              a.Date.Date == dateUtc.Date &&  // Compare both dates in UTC
+                              a.Date.Date == dateUtc.Date &&  
                               a.Status == AppointmentStatus.Active);
         }
 
         public async Task UpdateAsync(Appointment model)
         {
-            _context.Appointments.Update(model); // Update the tracked entity
-            await _context.SaveChangesAsync();  // Persist changes to the database
+            _context.Appointments.Update(model); 
+            await _context.SaveChangesAsync();  
         }
 
        
@@ -98,6 +98,52 @@ namespace AppointmentSystem.Repository.Implementation
                            (a.Status == AppointmentStatus.Active ||
                             a.Status == AppointmentStatus.Deactivated))
                 .ToListAsync();
+        }
+
+
+        public async Task<List<AllAppointmentViewmodel>> GetAppointmentsByOfficerIdAsync(int officerId)
+        {
+            return await _context.Appointments
+                .Include(a => a.Officer)
+                .Include(a => a.Visitor)
+                .Where(a => a.OfficerId == officerId) 
+                .Select(a => new AllAppointmentViewmodel
+                {
+                    Id = a.Id,
+                    OfficerId = a.OfficerId,
+                    VisitorId = a.VisitorId,
+                    Name = a.Name,
+                    Date = a.Date,
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    AddedOn = a.AddedOn,
+                    Status = a.Status,
+                    OfficerName = a.Officer.Name, 
+                    VisitorName = a.Visitor.Name 
+                }).ToListAsync();
+        }
+
+
+        public async Task<List<AllAppointmentViewmodel>> GetAppointmentsByVisitorIdAsync(int visitorId)
+        {
+            return await _context.Appointments
+                .Include(a => a.Officer)
+                .Include(a => a.Visitor)
+                .Where(a => a.VisitorId == visitorId) 
+                .Select(a => new AllAppointmentViewmodel
+                {
+                    Id = a.Id,
+                    OfficerId = a.OfficerId,
+                    VisitorId = a.VisitorId,
+                    Name = a.Name,
+                    Date = a.Date,
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    AddedOn = a.AddedOn,
+                    Status = a.Status,
+                    OfficerName = a.Officer.Name, 
+                    VisitorName = a.Visitor.Name 
+                }).ToListAsync();
         }
 
     }

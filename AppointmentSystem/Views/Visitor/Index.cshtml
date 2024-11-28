@@ -26,6 +26,12 @@
                 <td>@visitor.MobileNumber</td>
                 <td>@visitor.EmailAddress</td>
                 <td>
+                    <a href="@Url.Action("Edit", "Visitor", new { id = visitor.Id })" class="btn btn-warning">Edit</a>
+                    <button class="btn btn-info view-appointments" data-visitor-id="@visitor.Id" data-bs-toggle="modal" data-bs-target="#appointmentsModal">
+                        Appointments
+                    </button>
+                </td>
+                <td>
                     <div class="form-check form-switch">
                         <input class="form-check-input status-toggle"
                                type="checkbox"
@@ -37,43 +43,103 @@
                         </label>
                     </div>
                 </td>
-                <td>
-  
-                    <a href="@Url.Action("Edit", "Visitor", new { id = visitor.Id })" class="btn btn-warning">Edit</a>
-           
-                </td>
             </tr>
         }
     </tbody>
 </table>
+
+
+
+<div class="modal fade" id="appointmentsModal" tabindex="-1" aria-labelledby="appointmentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="appointmentsModalLabel">Appointments for <span id="officerName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Appointment Name</th>
+                            <th>Visitor</th>
+                            <th>Date</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsList">
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <script>
-               $(document).ready(function() {
-            // Handling the status toggle change
+        $(document).ready(function() {
+           
             $('.status-toggle').change(function() {
-                var visitorId = $(this).data('visitor-id'); // Fix here
+                var visitorId = $(this).data('visitor-id');
                 var isActive = $(this).is(':checked');
 
                 $.ajax({
                     url: '/Visitor/ToggleStatus',
                     type: 'POST',
                     data: {
-                        id: visitorId, // Use visitorId correctly
+                        id: visitorId,
                         status: isActive
                     },
                     success: function(response) {
-                        // Update the label text dynamically based on status
                         var label = $(`label[for="flexSwitchCheckChecked${visitorId}"]`);
                         label.text(isActive ? 'Active' : 'Inactive');
                     },
                     error: function() {
-                        // If the AJAX request fails, revert the switch to its previous state
-                        $(this).prop('checked', !isActive); // Revert toggle
+                        $(this).prop('checked', !isActive); 
                         alert('Failed to update status');
                     }
                 });
             });
-        });
 
+            $('.view-appointments').click(function () {
+                var visitorId = $(this).data('visitor-id');
+                var visitorName = $(this).data('visitor-name');
+
+              
+                $('#visitorName').text(visitorName);
+
+           
+                $.ajax({
+                    url: `/api/Appointment/GetVisitorAppointments/${visitorId}`, 
+                    type: 'GET',
+                    success: function (appointments) {
+                       
+                        $('#appointmentsList').empty();
+
+                        appointments.forEach(function (appointment) {
+                            var row = `<tr>
+                                <td>${appointment.name}</td>
+                                <td>${appointment.visitorName}</td>
+                                <td>${appointment.date}</td>
+                                <td>${appointment.startTime}</td>
+                                <td>${appointment.endTime}</td>
+                                <td>${appointment.status}</td>
+                            </tr>`;
+                            $('#appointmentsList').append(row);
+                        });
+
+                     
+                        $('#appointmentsModal').modal('show');
+                    },
+                    error: function () {
+                        alert('Failed to load appointments');
+                    }
+                });
+            });
+        });
     </script>
 }

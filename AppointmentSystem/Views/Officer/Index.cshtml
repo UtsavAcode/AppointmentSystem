@@ -20,7 +20,7 @@
         <tr>
             <th>Name</th>
             <th>Work Hours</th>
-           <th>Post</th>
+            <th>Post</th>
             <th>Status</th>
             <th>Actions</th>
         </tr>
@@ -30,9 +30,13 @@
         {
             <tr>
                 <td>@officer.Name</td>
-       
+
                 <td>@officer.WorkStartTime - @officer.WorkEndTime</td>
                 <td>@officer.PostName</td>
+                <td>
+                    <!-- Add the "Appointments" button -->
+                    <button class="btn btn-info appointment-btn" data-officer-id="@officer.Id" data-officer-name="@officer.Name">Appointments</button>
+                </td>
 
                 <td>
                     <div class="form-check form-switch">
@@ -52,7 +56,38 @@
             </tr>
         }
     </tbody>
+
 </table>
+
+<!-- Modal for displaying appointments -->
+<div class="modal fade" id="appointmentsModal" tabindex="-1" aria-labelledby="appointmentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="appointmentsModalLabel">Appointments for <span id="officerName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Appointment Name</th>
+                            <th>Visitor</th>
+                            <th>Date</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsList">
+                        <!-- Appointments will be loaded here via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @section Scripts {
     <script>
@@ -77,6 +112,46 @@
                         toggleElement.prop('checked', !isActive); // Revert the toggle
                         label.text(!isActive ? 'Active' : 'Inactive');
                         alert(xhr.responseText || 'Failed to update status');
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function () {
+            // When the "Appointments" button is clicked
+            $('.appointment-btn').click(function () {
+                var officerId = $(this).data('officer-id');
+                var officerName = $(this).data('officer-name');
+
+                // Set the officer name in the modal title
+                $('#officerName').text(officerName);
+
+                // Send an AJAX request to get the appointments for the selected officer
+                $.ajax({
+                    url: `/api/Appointment/GetOfficerAppointments/${officerId}`, // Adjust the URL to your API
+                    type: 'GET',
+                    success: function (appointments) {
+                        // Clear the current list of appointments
+                        $('#appointmentsList').empty();
+
+                        // Populate the modal with the appointments
+                        appointments.forEach(function (appointment) {
+                            var row = `<tr>
+                                <td>${appointment.name}</td>
+                                <td>${appointment.visitorName}</td>
+                                <td>${appointment.date}</td>
+                                <td>${appointment.startTime}</td>
+                                <td>${appointment.endTime}</td>
+                                <td>${appointment.status}</td>
+                            </tr>`;
+                            $('#appointmentsList').append(row);
+                        });
+
+                        // Show the modal
+                        $('#appointmentsModal').modal('show');
+                    },
+                    error: function () {
+                        alert('Failed to load appointments');
                     }
                 });
             });
