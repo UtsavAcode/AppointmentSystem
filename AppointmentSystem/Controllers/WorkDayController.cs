@@ -54,15 +54,15 @@ namespace AppointmentSystem.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-           
-            var workDay = await _service.GetWorkByIdAsync(id); 
+
+            var workDay = await _service.GetWorkByIdAsync(id);
 
             if (workDay == null)
             {
                 return NotFound();
             }
 
-           
+
             var model = new WorkDayViewModel
             {
                 Id = workDay.Id,
@@ -70,9 +70,9 @@ namespace AppointmentSystem.Controllers
                 OfficerId = workDay.OfficerId
             };
 
-            
+
             var officers = await _officerService.GetActiveOfficersAsync();
-            ViewBag.Officers = new SelectList(officers, "Id", "Name", model.OfficerId); 
+            ViewBag.Officers = new SelectList(officers, "Id", "Name", model.OfficerId);
 
             return View(model);
         }
@@ -83,7 +83,7 @@ namespace AppointmentSystem.Controllers
         {
             if (!ModelState.IsValid)
             {
-               
+
                 return View(model);
             }
 
@@ -100,7 +100,7 @@ namespace AppointmentSystem.Controllers
                 return View(model);
             }
         }
-      
-        }
-    
+
+    }
+
 }

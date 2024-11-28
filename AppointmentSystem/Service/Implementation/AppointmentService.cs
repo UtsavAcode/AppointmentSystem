@@ -189,6 +189,31 @@ namespace AppointmentSystem.Service.Implementation
 
 
 
+        public async Task ToggleStatusAsync(int id)
+        {
+            var appointment = await _repo.GetAsync(id);
+
+            if (appointment == null)
+            {
+                throw new KeyNotFoundException($"No appointment found with ID {id}.");
+            }
+
+            if (appointment.Status == AppointmentStatus.Active)
+            {
+                appointment.Status = AppointmentStatus.Deactivated;
+            }
+            else if (appointment.Status == AppointmentStatus.Deactivated)
+            {
+                appointment.Status = AppointmentStatus.Active;
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid appointment status to toggle.");
+            }
+
+            appointment.LastUpdatedOn = DateTime.UtcNow;
+            await _repo.UpdateAsync(appointment);
+        }
 
 
 

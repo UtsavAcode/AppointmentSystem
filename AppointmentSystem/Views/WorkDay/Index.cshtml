@@ -1,37 +1,37 @@
 ﻿    @model IEnumerable<AppointmentSystem.Models.ViewModel.AllWorkDaysViewModel>
 
-    @{
-        ViewData["Title"] = "Workdays";
-    }
+@{
+    ViewData["Title"] = "Workdays";
+}
 
-    <h1>Workdays</h1>
+<h1>Workdays</h1>
 
-    <p>
-        <a href="@Url.Action("AddWorkDay", "WorkDay")" class="btn btn-primary">Add New Workday</a>
-    </p>
+<p>
+    <a href="@Url.Action("AddWorkDay", "WorkDay")" class="btn btn-primary">Add New Workday</a>
+</p>
 
-  
-     <table class="table">
-        <thead>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Day of the Week</th>
+            <th>Officer ID</th>
+            <th>Officer Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var workday in Model)
+        {
             <tr>
-                <th>Day of the Week</th>
-                <th>Officer ID</th>
-                <th>Officer Name</th>
-                <th>Actions</th>
+                <td>@workday.DayOfWeek</td>
+                <td>@workday.OfficerId</td>
+                <td>@workday.OfficerName</td>
+                <td>
+                    <a href="@Url.Action("Edit", "WorkDay", new { id = workday.Id })" class="btn btn-warning">Edit</a>
+
+                </td>
             </tr>
-        </thead>
-        <tbody>
-    @foreach (var workday in Model)
-    {
-                    <tr>
-                        <td>@workday.DayOfWeek</td>
-                        <td>@workday.OfficerId</td>
-                        <td>@workday.OfficerName</td>
-                        <td>
-                            <a href="@Url.Action("Edit", "WorkDay", new { id = workday.Id })" class="btn btn-warning">Edit</a>
-                           
-                        </td>
-                    </tr>
-    }
-        </tbody>
-    </table> 
+        }
+    </tbody>
+</table> 

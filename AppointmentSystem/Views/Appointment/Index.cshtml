@@ -7,7 +7,7 @@
 
 <h1>Appointments</h1>
 
-<!-- Filter Form -->
+
 <form method="get" class="mb-3">
     <div class="row">
         <div class="col-md-3">
@@ -55,7 +55,18 @@
                     <td>@appointment.Date.ToShortDateString()</td>
                     <td>@appointment.StartTime</td>
                     <td>@appointment.EndTime</td>
-                    <td>@appointment.Status</td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input toggle-status"
+                                   type="checkbox"
+                                   id="flexSwitchCheckChecked@(appointment.Id)"
+                                   data-appointment-id="@appointment.Id"
+                            @(appointment.Status == AppointmentStatus.Active ? "checked" : "")>
+                            <label class="form-check-label" for="flexSwitchCheckChecked@(appointment.Id)">
+                                @(appointment.Status == AppointmentStatus.Active ? "Active" : "Inactive")
+                            </label>
+                        </div>
+                    </td>
                     <td>
                         @if (appointment.Status != AppointmentStatus.Cancelled)
                         {
@@ -78,3 +89,38 @@
         }
     </tbody>
 </table>
+
+<script>
+       document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".toggle-status").forEach(function (toggleSwitch) {
+            toggleSwitch.addEventListener("change", function () {
+                const appointmentId = this.dataset.appointmentId;
+                const isChecked = this.checked;
+
+                fetch('@Url.Action("ToggleStatus", "Appointment")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: parseInt(appointmentId) })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const label = this.nextElementSibling;
+                        label.textContent = isChecked ? 'Active' : 'Inactive';
+                       
+                    } else {
+                       
+                        this.checked = !isChecked; 
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.checked = !isChecked; 
+                    alert('An error occurred while updating the status');
+                });
+            });
+        });
+    });
+</script>

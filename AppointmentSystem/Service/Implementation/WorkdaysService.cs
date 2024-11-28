@@ -17,7 +17,7 @@ namespace AppointmentSystem.Service.Implementation
         }
         public async Task AddWorkDayAsync(WorkDayViewModel model)
         {
-           
+
             var existingDay = await _repository.GetByOfficerIdAndDayAsync(model.OfficerId, model.DayOfWeek);
             if (existingDay != null)
             {
@@ -65,7 +65,7 @@ namespace AppointmentSystem.Service.Implementation
                 throw new InvalidOperationException($"WorkDay with ID {model.Id} not found.");
             }
 
-            
+
             existingDay.DayOfWeek = model.DayOfWeek;
             existingDay.OfficerId = model.OfficerId;
 
@@ -75,7 +75,7 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task RemoveWorkDaysAsync(int officerId)
         {
-             await _repository.RemoveWorkDaysAsync(officerId);
+            await _repository.RemoveWorkDaysAsync(officerId);
         }
     }
 }

@@ -14,19 +14,19 @@ namespace AppointmentSystem.Controllers
         private IOfficerService _officerService;
         private IVisitorService _visitorService;
         private readonly ILogger<AppointmentController> _logger;
-        public AppointmentController(ILogger<AppointmentController> logger,IAppointmentService service, IOfficerService officerService, IVisitorService visitorService)
+        public AppointmentController(ILogger<AppointmentController> logger, IAppointmentService service, IOfficerService officerService, IVisitorService visitorService)
         {
             _service = service;
             _officerService = officerService;
             _visitorService = visitorService;
-            _logger = logger; 
+            _logger = logger;
         }
         public async Task<IActionResult> Index(string officerName, DateTime? date, TimeSpan? startTime, TimeSpan? endTime)
         {
-            // Get all appointments
+
             var appointments = await _service.GetAllAsync();
 
-            // Apply filters if provided
+
             if (!string.IsNullOrEmpty(officerName))
             {
                 appointments = appointments.Where(a => a.OfficerName.Contains(officerName, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -47,27 +47,26 @@ namespace AppointmentSystem.Controllers
                 appointments = appointments.Where(a => a.EndTime <= endTime.Value).ToList();
             }
 
-            // Sort: Active appointments first, then Cancelled ones
             appointments = appointments
-                .OrderBy(a => a.Status == AppointmentStatus.Cancelled) // False (Active) comes first
-                .ThenBy(a => a.Date) // Sort by Date as secondary criterion
-                .ThenBy(a => a.StartTime) // Sort by Start Time
+                .OrderBy(a => a.Status == AppointmentStatus.Cancelled)
+                .ThenBy(a => a.Date)
+                .ThenBy(a => a.StartTime)
                 .ToList();
 
-            // Pass filter values to the view using ViewData
+
             ViewData["OfficerName"] = officerName;
             ViewData["Date"] = date;
             ViewData["StartTime"] = startTime;
             ViewData["EndTime"] = endTime;
 
-            // Return the filtered and sorted list
+
             return View(appointments);
         }
 
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var officer =await _officerService.GetActiveOfficersAsync();
+            var officer = await _officerService.GetActiveOfficersAsync();
             ViewBag.Officers = new SelectList(officer, "Id", "Name");
             var visitor = await _visitorService.GetActiveVisitorsAsync();
             ViewBag.Visitors = new SelectList(visitor, "Id", "Name");
@@ -129,16 +128,16 @@ namespace AppointmentSystem.Controllers
                 return NotFound();
             }
 
-            // Check if the appointment is already canceled
+
             if (appointment.Status == AppointmentStatus.Cancelled)
             {
                 return RedirectToAction("Index");
             }
 
-            // Cancel the appointment
+
             await _service.CancelAsync(id);
 
-            // Redirect back to the index page after cancellation
+
             return RedirectToAction("Index");
         }
 
@@ -151,14 +150,14 @@ namespace AppointmentSystem.Controllers
                 return NotFound();
             }
 
-            // Check if the appointment is cancelled
+
             if (appointment.Status == AppointmentStatus.Cancelled)
             {
                 TempData["ErrorMessage"] = "Appointment is cancelled and cannot be edited.";
                 return RedirectToAction("Index");
             }
 
-            // Map `AppointmentViewmodel` to `EditAppointment` view model
+
             var model = new EditAppointment
             {
                 Id = appointment.Id,
@@ -171,15 +170,14 @@ namespace AppointmentSystem.Controllers
                 LastUpdatedOn = appointment.LastUpdatedOn
             };
 
-            // Prepare dropdown data for officers and visitors
             var officers = await _officerService.GetActiveOfficersAsync();
             ViewBag.Officers = new SelectList(officers, "Id", "Name");
 
             var visitors = await _visitorService.GetActiveVisitorsAsync();
             ViewBag.Visitors = new SelectList(visitors, "Id", "Name");
 
-            // Now pass the `EditAppointment` model to the view
-            return View(model); // Pass the correct type to the view.
+
+            return View(model);
         }
 
 
@@ -205,7 +203,7 @@ namespace AppointmentSystem.Controllers
 
             try
             {
-                // Attempt to update the appointment
+
                 await _service.UpdateAsync(model);
                 return Json(new
                 {
@@ -216,7 +214,7 @@ namespace AppointmentSystem.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                // Handle custom logic errors
+
                 return Json(new
                 {
                     success = false,
@@ -225,7 +223,7 @@ namespace AppointmentSystem.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                // Handle missing appointment errors
+
                 return Json(new
                 {
                     success = false,
@@ -234,7 +232,7 @@ namespace AppointmentSystem.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                // Handle database update errors
+
                 var innerExceptionMessage = dbEx.InnerException?.Message ?? dbEx.Message;
                 return Json(new
                 {
@@ -244,7 +242,7 @@ namespace AppointmentSystem.Controllers
             }
             catch (Exception ex)
             {
-                // Handle all other exceptions
+
                 return Json(new
                 {
                     success = false,
@@ -260,7 +258,7 @@ namespace AppointmentSystem.Controllers
             try
             {
                 var appointments = await _service.GetAppointmentsByVisitorIdAsync(visitorId);
-                return Ok(appointments); // Return the appointments as a successful response
+                return Ok(appointments);
             }
             catch (Exception ex)
             {
@@ -274,21 +272,48 @@ namespace AppointmentSystem.Controllers
         {
             try
             {
-                // Call the service method to fetch appointments by officer ID
+
                 var appointments = await _service.GetAppointmentsByOfficerIdAsync(officerId);
 
-                // Return the appointments as a successful response
+
                 return Ok(appointments);
             }
             catch (Exception ex)
             {
-                // Log the exception details
+
                 _logger.LogError(ex, $"Error fetching officer {officerId} appointments");
 
-                // Return a 500 Internal Server Error with a message
+
                 return StatusCode(500, "An error occurred while fetching appointments.");
             }
+
+
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleStatus([FromBody] ToggleStatusViewModel model)
+        {
+            try
+            {
+                await _service.ToggleStatusAsync(model.Id);
+                return Json(new { success = true, message = "Status toggled successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
+            }
+        }
+
+        public class ToggleStatusViewModel
+        {
+            public int Id { get; set; }
+        }
+
+
 
     }
 }
