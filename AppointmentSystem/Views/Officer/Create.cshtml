@@ -23,7 +23,6 @@
         <span asp-validation-for="PostId" class="text-danger"></span>
     </div>
 
-
     <div class="form-group mb-3">
         <label asp-for="WorkStartTime" class="control-label"></label>
         <input asp-for="WorkStartTime" class="form-control" type="time" id="WorkStartTime" />
@@ -36,6 +35,34 @@
         <span asp-validation-for="WorkEndTime" class="text-danger"></span>
     </div>
 
+    <!-- Workdays Selection with checkboxes -->
+    <div class="form-group">
+        <label>Work Days</label>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="WorkDays[0].DayOfWeek" value="1" /> Monday
+            </label>
+            <label>
+                <input type="checkbox" name="WorkDays[1].DayOfWeek" value="2" /> Tuesday
+            </label>
+            <label>
+                <input type="checkbox" name="WorkDays[2].DayOfWeek" value="3" /> Wednesday
+            </label>
+            <label>
+                <input type="checkbox" name="WorkDays[3].DayOfWeek" value="4" /> Thursday
+            </label>
+            <label>
+                <input type="checkbox" name="WorkDays[4].DayOfWeek" value="5" /> Friday
+            </label>
+            <label>
+                <input type="checkbox" name="WorkDays[5].DayOfWeek" value="6" /> Saturday
+            </label>
+            <label>
+                <input type="checkbox" name="WorkDays[6].DayOfWeek" value="7" /> Sunday
+            </label>
+        </div>
+    </div>
+
     <div class="form-group">
         <button type="submit" class="btn btn-primary">Create</button>
         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
@@ -44,30 +71,4 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
-
-    <script>
-                $(document).ready(function () {
-            
-            $('form').on('submit', function (e) {
-                var startTime = $('#WorkStartTime').val();
-                var endTime = $('#WorkEndTime').val();
-
-                if (startTime && endTime && startTime >= endTime) {
-                    e.preventDefault();
-                    alert('Work end time must be after work start time');
-                    return false;
-                }
-            });
-
-            $('#PostId').on('change', function () {
-             
-                var postId = $(this).val(); 
-                if (postId) {
-                  
-                    console.log('Post selected with ID: ' + postId);
-                }
-            });
-        });
-
-    </script>
 }

@@ -17,14 +17,16 @@ namespace AppointmentSystem.Service.Implementation
         private readonly IActivityRepository _activityRepository;
         private readonly IVisitorRepository _visitorRepository;
         private readonly ApplicationDbContext _context;
+        private readonly IWorkdaysService _workdaysService;
 
-        public OfficerService(IOfficerRepository officerRepository, IVisitorRepository visitorRepository, IPostRepository postRepository, ApplicationDbContext context, IActivityRepository activityRepository)
+        public OfficerService(IOfficerRepository officerRepository, IWorkdaysService workdaysService, IVisitorRepository visitorRepository, IPostRepository postRepository, ApplicationDbContext context, IActivityRepository activityRepository)
         {
             _officerRepository = officerRepository;
             _postRepository = postRepository;
             _context = context;
             _activityRepository = activityRepository;
             _visitorRepository = visitorRepository;
+           _workdaysService =  workdaysService;
         }
 
         public async Task<OfficerViewModel> GetOfficerByIdAsync(int id)
@@ -40,32 +42,50 @@ namespace AppointmentSystem.Service.Implementation
             var officers = await _officerRepository.GetAllOfficersAsync();
             return officers;
         }
-
         public async Task UpdateOfficerAsync(OfficerViewModel model)
         {
-            var existingUser = await _officerRepository.GetOfficerByIdAsync(model.Id);
-            if (existingUser != null)
+            var existingOfficer = await _officerRepository.GetOfficerByIdAsync(model.Id);
+            if (existingOfficer != null)
             {
-                existingUser.Name = model.Name;
-                existingUser.PostId = model.PostId;
+                
+                existingOfficer.Name = model.Name;
+                existingOfficer.PostId = model.PostId;
 
                
                 if (TimeOnly.TryParse(model.WorkStartTime, out var parsedWorkStartTime) &&
                     TimeOnly.TryParse(model.WorkEndTime, out var parsedWorkEndTime))
                 {
-                    
-                    existingUser.WorkStartTime = parsedWorkStartTime.ToString("HH:mm");
-                    existingUser.WorkEndTime = parsedWorkEndTime.ToString("HH:mm");
+                    existingOfficer.WorkStartTime = parsedWorkStartTime.ToString("HH:mm");
+                    existingOfficer.WorkEndTime = parsedWorkEndTime.ToString("HH:mm");
 
-                  
-                    await CancelInvalidActivities(existingUser.Id, parsedWorkStartTime, parsedWorkEndTime);
+                   
+                    await CancelInvalidActivities(existingOfficer.Id, parsedWorkStartTime, parsedWorkEndTime);
                 }
                 else
                 {
                     throw new FormatException("WorkStartTime or WorkEndTime is not in a valid TimeOnly format.");
                 }
+ 
+                await _officerRepository.UpdateOfficerAsync(existingOfficer);
 
-                await _officerRepository.UpdateOfficerAsync(existingUser);
+              
+                if (model.WorkDays != null && model.WorkDays.Any())
+                {
+                    
+                    await _workdaysService.RemoveWorkDaysAsync(existingOfficer.Id);
+
+                     
+                    foreach (var workDay in model.WorkDays)
+                    {
+                        var workDayModel = new WorkDayViewModel
+                        {
+                            OfficerId = existingOfficer.Id,
+                            DayOfWeek = workDay.DayOfWeek
+                        };
+                         
+                        await _workdaysService.AddWorkDayAsync(workDayModel);
+                    }
+                }
             }
         }
 
@@ -255,21 +275,36 @@ namespace AppointmentSystem.Service.Implementation
         {
             var officer = new Officer
             {
-
                 Name = model.Name,
                 PostId = model.PostId,
                 Status = model.Status,
                 WorkStartTime = model.WorkStartTime,
                 WorkEndTime = model.WorkEndTime,
-
             };
 
             if (officer != null)
             {
+                 
                 await _officerRepository.InsertOfficerAsync(officer);
-            }
 
+                
+                if (model.WorkDays != null && model.WorkDays.Any())
+                {
+                    foreach (var workDay in model.WorkDays)
+                    {
+                        var workDayModel = new WorkDayViewModel
+                        {
+                            OfficerId = officer.Id,
+                            DayOfWeek = workDay.DayOfWeek
+                        };
+
+                        
+                        await _workdaysService.AddWorkDayAsync(workDayModel);
+                    }
+                }
+            }
         }
+
 
         public async Task<bool> IsOfficerAvailableAsync(int officerId, DateOnly date, TimeOnly startTime, TimeOnly endTime)
         {

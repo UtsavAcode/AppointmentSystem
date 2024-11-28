@@ -48,8 +48,7 @@ namespace AppointmentSystem.Repository.Implementation
             }
         }
 
-     
-   
+
 
         public async Task<IEnumerable<Visitor>> GetActiveVisitorsAsync()
         {

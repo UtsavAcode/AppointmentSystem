@@ -12,12 +12,15 @@ namespace AppointmentSystem.Controllers
         private readonly IOfficerService _officerService;
         private readonly IPostService _postService;
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<OfficerController> _logger;
 
-        public OfficerController(IOfficerService officerService, IPostService postService, ApplicationDbContext context)
+        public OfficerController(IOfficerService officerService, IPostService postService,
+            ApplicationDbContext context, ILogger<OfficerController> logger)
         {
             _officerService = officerService;
             _postService = postService;
             _context = context;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -29,6 +32,7 @@ namespace AppointmentSystem.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading officers");
                 TempData["Error"] = "Error loading officers: " + ex.Message;
                 return View(new List<OfficerViewModel>());
             }
@@ -37,12 +41,10 @@ namespace AppointmentSystem.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-
             var posts = _postService.GetActivePostAsync().Result;
             ViewBag.Posts = new SelectList(posts, "Id", "Name");
             return View();
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -50,14 +52,35 @@ namespace AppointmentSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                model.Status = true;
-                await _officerService.CreateOfficerAsync(model);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    model.Status = true; 
+                    model.WorkDays = model.WorkDays ?? new List<WorkDayViewModel>();
+
+                   
+                    if (!TimeOnly.TryParse(model.WorkStartTime, out _) ||
+                        !TimeOnly.TryParse(model.WorkEndTime, out _))
+                    {
+                        ModelState.AddModelError("", "Invalid time format. Please use HH:mm format.");
+                        var posts = await _postService.GetActivePostAsync();
+                        ViewBag.Posts = new SelectList(posts, "Id", "Name");
+                        return View(model);
+                    }
+
+                    await _officerService.CreateOfficerAsync(model);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error creating officer");
+                    ModelState.AddModelError("", "Error creating officer: " + ex.Message);
+                }
             }
+
+            var postsForError = await _postService.GetActivePostAsync();
+            ViewBag.Posts = new SelectList(postsForError, "Id", "Name");
             return View(model);
-
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
@@ -71,12 +94,13 @@ namespace AppointmentSystem.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var posts = _postService.GetActivePostAsync().Result;
+                var posts = await _postService.GetActivePostAsync();
                 ViewBag.Posts = new SelectList(posts, "Id", "Name");
                 return View(officer);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading edit form for officer {OfficerId}", id);
                 TempData["Error"] = "Error loading edit form: " + ex.Message;
                 return RedirectToAction(nameof(Index));
             }
@@ -86,16 +110,54 @@ namespace AppointmentSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(OfficerViewModel model)
         {
-
             if (ModelState.IsValid)
             {
-                await _officerService.UpdateOfficerAsync(model);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    
+                    if (!TimeOnly.TryParse(model.WorkStartTime, out _) ||
+                        !TimeOnly.TryParse(model.WorkEndTime, out _))
+                    {
+                        ModelState.AddModelError("", "Invalid time format. Please use HH:mm format.");
+                        var posts = await _postService.GetActivePostAsync();
+                        ViewBag.Posts = new SelectList(posts, "Id", "Name");
+                        return View(model);
+                    }
+
+                  
+                    if (model.WorkDays != null)
+                    {
+                        foreach (var workDay in model.WorkDays)
+                        {
+                            if (workDay.DayOfWeek < 1 || workDay.DayOfWeek > 7)
+                            {
+                                ModelState.AddModelError("", $"Invalid day of week: {workDay.DayOfWeek}. Must be between 1 and 7.");
+                                var posts = await _postService.GetActivePostAsync();
+                                ViewBag.Posts = new SelectList(posts, "Id", "Name");
+                                return View(model);
+                            }
+                        }
+                    }
+
+                    await _officerService.UpdateOfficerAsync(model);
+                    TempData["Success"] = "Officer updated successfully.";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (FormatException ex)
+                {
+                    _logger.LogError(ex, "Invalid time format while updating officer {OfficerId}", model.Id);
+                    ModelState.AddModelError("", ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error updating officer {OfficerId}", model.Id);
+                    ModelState.AddModelError("", "Error updating officer: " + ex.Message);
+                }
             }
 
-
+            var postsForError = await _postService.GetActivePostAsync();
+            ViewBag.Posts = new SelectList(postsForError, "Id", "Name");
             return View(model);
-
         }
 
         [HttpPost]
@@ -105,7 +167,6 @@ namespace AppointmentSystem.Controllers
             {
                 if (status)
                 {
-                    
                     var officer = await _officerService.GetOfficerByIdAsync(id);
                     if (officer != null)
                     {
@@ -126,6 +187,7 @@ namespace AppointmentSystem.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error toggling status for officer {OfficerId}", id);
                 return StatusCode(500, "An error occurred while updating the status: " + ex.Message);
             }
         }
@@ -142,6 +204,5 @@ namespace AppointmentSystem.Controllers
 
             return Json(new { Status = post.Status });
         }
-
     }
 }

@@ -21,6 +21,7 @@
             <th>Name</th>
             <th>Work Hours</th>
             <th>Post</th>
+            <th>Appointment</th>
             <th>Status</th>
             <th>Actions</th>
         </tr>
@@ -34,7 +35,7 @@
                 <td>@officer.WorkStartTime - @officer.WorkEndTime</td>
                 <td>@officer.PostName</td>
                 <td>
-                    <!-- Add the "Appointments" button -->
+                    
                     <button class="btn btn-info appointment-btn" data-officer-id="@officer.Id" data-officer-name="@officer.Name">Appointments</button>
                 </td>
 
@@ -59,7 +60,7 @@
 
 </table>
 
-<!-- Modal for displaying appointments -->
+
 <div class="modal fade" id="appointmentsModal" tabindex="-1" aria-labelledby="appointmentsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -80,7 +81,7 @@
                         </tr>
                     </thead>
                     <tbody id="appointmentsList">
-                        <!-- Appointments will be loaded here via JavaScript -->
+                    
                     </tbody>
                 </table>
             </div>
@@ -118,23 +119,23 @@
         });
 
         $(document).ready(function () {
-            // When the "Appointments" button is clicked
+        
             $('.appointment-btn').click(function () {
                 var officerId = $(this).data('officer-id');
                 var officerName = $(this).data('officer-name');
 
-                // Set the officer name in the modal title
+            
                 $('#officerName').text(officerName);
 
-                // Send an AJAX request to get the appointments for the selected officer
+             
                 $.ajax({
-                    url: `/api/Appointment/GetOfficerAppointments/${officerId}`, // Adjust the URL to your API
+                    url: `/api/Appointment/GetOfficerAppointments/${officerId}`, 
                     type: 'GET',
                     success: function (appointments) {
-                        // Clear the current list of appointments
+                    
                         $('#appointmentsList').empty();
 
-                        // Populate the modal with the appointments
+                    
                         appointments.forEach(function (appointment) {
                             var row = `<tr>
                                 <td>${appointment.name}</td>
@@ -147,7 +148,7 @@
                             $('#appointmentsList').append(row);
                         });
 
-                        // Show the modal
+                  
                         $('#appointmentsModal').modal('show');
                     },
                     error: function () {

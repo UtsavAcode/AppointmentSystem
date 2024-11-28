@@ -12,6 +12,8 @@ namespace AppointmentSystem.Repository.Interface
         Task<WorkDay> GetByOfficerIdAndDayAsync(int officerId, int dayOfWeek);
         Task<WorkDay> GetByOfficerIdAsync(int officerId);
 
+        Task RemoveWorkDaysAsync(int officerId);
+
 
     }
 }

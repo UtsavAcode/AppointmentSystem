@@ -2,6 +2,7 @@
 using AppointmentSystem.Models.ViewModel;
 using AppointmentSystem.Repository.Interface;
 using AppointmentSystem.Service.Interface;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
 namespace AppointmentSystem.Service.Implementation
@@ -16,11 +17,11 @@ namespace AppointmentSystem.Service.Implementation
         }
         public async Task AddWorkDayAsync(WorkDayViewModel model)
         {
-
-            var existingDay = await _repository.GetByOfficerIdAsync(model.OfficerId);
+           
+            var existingDay = await _repository.GetByOfficerIdAndDayAsync(model.OfficerId, model.DayOfWeek);
             if (existingDay != null)
             {
-                throw new InvalidOperationException($"Officer with ID {model.OfficerId} is already assigned to Day"); 
+                throw new InvalidOperationException($"Officer with ID {model.OfficerId} is already assigned to Day {model.DayOfWeek}.");
             }
 
             var day = new WorkDay
@@ -29,10 +30,9 @@ namespace AppointmentSystem.Service.Implementation
                 OfficerId = model.OfficerId,
             };
 
-
             await _repository.AddAsync(day);
-
         }
+
         public async Task<IEnumerable<AllWorkDaysViewModel>> GetAllWorkDaysAsync()
         {
             var days = await _repository.GetAllAsync();
@@ -53,25 +53,29 @@ namespace AppointmentSystem.Service.Implementation
 
         public async Task UpdateWorkDayAsync(WorkDayViewModel model)
         {
-
-            var existingOfficer = await _repository.GetByOfficerIdAndDayAsync(model.OfficerId,model.DayOfWeek);
-            if (existingOfficer != null) { throw new InvalidOperationException($"Officer with ID {model.OfficerId} is already assigned to Day {model.DayOfWeek}."); }
+            var existingOfficer = await _repository.GetByOfficerIdAndDayAsync(model.OfficerId, model.DayOfWeek);
+            if (existingOfficer != null && existingOfficer.Id != model.Id)
+            {
+                throw new InvalidOperationException($"Officer with ID {model.OfficerId} is already assigned to Day {model.DayOfWeek}.");
+            }
 
             var existingDay = await _repository.GetByIdAsync(model.Id);
-
-
             if (existingDay == null)
             {
                 throw new InvalidOperationException($"WorkDay with ID {model.Id} not found.");
             }
 
-
+            
             existingDay.DayOfWeek = model.DayOfWeek;
             existingDay.OfficerId = model.OfficerId;
-
 
             await _repository.UpdateAsync(existingDay);
         }
 
+
+        public async Task RemoveWorkDaysAsync(int officerId)
+        {
+             await _repository.RemoveWorkDaysAsync(officerId);
+        }
     }
 }

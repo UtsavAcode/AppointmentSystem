@@ -8,5 +8,7 @@ namespace AppointmentSystem.Service.Interface
         Task UpdateWorkDayAsync(WorkDayViewModel model);
         Task<IEnumerable<AllWorkDaysViewModel>> GetAllWorkDaysAsync();
         Task<WorkDayViewModel> GetWorkByIdAsync(int id);
+
+        Task RemoveWorkDaysAsync(int officerId);
     }
 }

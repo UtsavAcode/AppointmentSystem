@@ -62,6 +62,12 @@ namespace AppointmentSystem.Repository.Implementation
         }
 
 
+        public async Task RemoveWorkDaysAsync(int officerId)
+        {
+            var workDays = await _context.WorkDays.Where(wd => wd.OfficerId == officerId).ToListAsync();
+            _context.WorkDays.RemoveRange(workDays);
+            await _context.SaveChangesAsync();
+        }
 
         public async Task<WorkDay> GetByOfficerIdAndDayAsync(int officerId, int dayOfWeek)
         {

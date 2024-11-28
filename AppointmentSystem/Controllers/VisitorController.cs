@@ -106,18 +106,18 @@ public class VisitorController : Controller
                 return NotFound(new { message = "Visitor not found" });
             }
 
-            // Update the status including related appointments
+            
             visitor.Status = status;
             await _visitorService.UpdateVisitorAsync(visitor);
 
 
             if (!status)
             {
-                await _visitorService.DeactivateFutureAppointmentsAsync(id);  // Call the method to deactivate future appointments
+                await _visitorService.DeactivateFutureAppointmentsAsync(id);  
             }
             else
             {
-                await _visitorService.ReactivateFutureAppointmentsAsync(id);  // Reactivate future appointments
+                await _visitorService.ReactivateFutureAppointmentsAsync(id);  
             }
 
             return Ok(new

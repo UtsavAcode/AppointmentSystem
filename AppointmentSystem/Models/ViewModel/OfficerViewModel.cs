@@ -21,7 +21,7 @@ namespace AppointmentSystem.Models.ViewModel
 
  
         public string WorkEndTime { get; set; }
-
+        public List<WorkDayViewModel> WorkDays { get; set; }
 
 
 
